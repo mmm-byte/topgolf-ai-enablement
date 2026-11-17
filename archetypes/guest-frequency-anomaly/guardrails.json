@@ -1,0 +1,14 @@
+{
+  "name": "guest-frequency-anomaly",
+  "data-class": "internal-aggregated",
+  "allowed-fields": ["guest_key", "venue_key", "date_key", "member_visits", "segment", "frequency_cap"],
+  "never-read-fields": ["card_brand", "card_last_four", "guest_name"],
+  "output": {
+    "type": "text",
+    "prohibited_patterns": ["guest_name", "email_address", "credit_card"],
+    "requires": ["Baseline", "Exclusions"]
+  },
+  "policy": {
+    "enabled": false
+  }
+}

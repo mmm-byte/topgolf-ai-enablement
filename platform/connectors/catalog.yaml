@@ -1,0 +1,186 @@
+# Governed connector catalog
+#
+# A connector is the only way an archetype reaches a data system. If it is not in this
+# catalog, an archetype cannot use that system, and the scope check fails.
+#
+# This catalog is the artifact that keeps "connect agents to internal systems" from
+# becoming "connect agents to everything". Each entry states the data class it may
+# return, the fields it may expose, the fields it must never expose, who stewards it,
+# and how a request for a new one is routed.
+#
+# All entries here are synthetic demonstrations. No real internal system is connected.
+
+catalog:
+  version: "2.4.0"
+  updated: "2026-11-10"
+  owner: "Platform Engineering"
+
+connectors:
+  - id: ops.readonly
+    title: Venue operations (read-only)
+    system: "Venue incident and shift log"
+    data_class: internal-personal
+    steward: Venue Ops Tech Lead
+    data_owner: Guest Experience
+    auth: service-account, no user tokens, read-only
+    runtime: constrained-worker
+    status: approved
+    exposes:
+      - incident_id
+      - venue_key
+      - date_key
+      - category
+      - severity
+      - resolution_minutes
+      - escalated
+    never_exposes:
+      - guest_name
+      - guest_email
+      - staff_medical_notes
+      - incident_investigation_notes
+    allowed_archetypes:
+      - shift-handover
+    notes: >-
+      Nightly sync into the constrained runtime. No live write path exists, so a
+      compromised agent cannot modify an incident record.
+
+  - id: analytics.readonly
+    title: Governed analytics (read-only)
+    system: "Gold metric layer"
+    data_class: internal-aggregated
+    steward: Data Platform Owner
+    data_owner: Guest Experience
+    auth: service-account, query-scoped, read-only
+    runtime: constrained-worker
+    status: approved
+    exposes:
+      - venue_key
+      - date_key
+      - visits
+      - revenue
+      - avg_check
+      - member_visits
+      - segment
+    never_exposes:
+      - guest_key
+      - card_brand
+      - card_last_four
+    allowed_archetypes:
+      - guest-frequency-anomaly
+    notes: >-
+      Aggregates only. Individual guest keys are available to the frequency archetype
+      through the scoped, consent-checked path in its own connector entry.
+
+  - id: marketing.readonly
+    title: Marketing audience (read-only)
+    system: "Consent-checked audience service"
+    data_class: internal-personal
+    steward: Marketing Platform Owner
+    data_owner: Guest Experience
+    auth: service-account, consent-scoped, read-only
+    runtime: constrained-worker
+    status: approved
+    exposes:
+      - guest_key
+      - age_band
+      - consented_email
+      - audience_segment
+      - tier_name
+    never_exposes:
+      - card_brand
+      - card_last_four
+      - guest_name
+      - guest_phone
+    allowed_archetypes:
+      - campaign-brief
+      - guest-frequency-anomaly
+    notes: >-
+      The service itself refuses to return a row where consented_email is not yes or the
+      age band is 13-17. The policy check in the guardrail engine is a second,
+      independent barrier, not the only one.
+
+  - id: campaign.analytics
+    title: Campaign performance (read-only)
+    system: "Campaign funnel aggregates"
+    data_class: internal-aggregated
+    steward: Marketing Platform Owner
+    data_owner: Guest Experience
+    auth: service-account, read-only
+    runtime: constrained-worker
+    status: approved
+    exposes:
+      - campaign_id
+      - channel
+      - audience_segment
+      - sends
+      - opens
+      - clicks
+      - bookings
+      - opt_outs
+      - cost_total
+    never_exposes:
+      - guest_key
+      - recipient_address
+    allowed_archetypes:
+      - campaign-brief
+    notes: >-
+      Aggregates only. No recipient-level record is exposed, so campaign performance
+      cannot become a re-identification path.
+
+  - id: venue.directory
+    title: Public venue directory
+    system: "Published venue and offer pages"
+    data_class: public
+    steward: Marketing Platform Owner
+    data_owner: Communications
+    auth: none, public content only
+    runtime: constrained-worker
+    status: approved
+    exposes:
+      - venue_name
+      - city
+      - state
+      - venue_format
+      - bay_count
+      - opened_date
+      - published_offers
+    never_exposes:
+      - revenue
+      - visits
+      - incidents
+    allowed_archetypes:
+      - campaign-brief
+    notes: >-
+      The only connector usable from an external tool, and it carries no operational
+      data.
+
+# Connectors that were requested and are not approved.
+pending:
+  - id: crm.full
+    requester: Marketing
+    requested: "2026-10-22"
+    status: blocked
+    reason: >-
+      Would expose contact history and identity fields with no consent mapping that
+      the guardrail engine can verify. Needs a data-owner decision on consent lineage
+      before it can be scoped.
+    route: Data owner, then Security
+
+  - id: pos.legacy
+    requester: Venue Operations
+    requested: "2026-11-01"
+    status: blocked
+    reason: >-
+      Legacy POS endpoint has no row-level authorisation and returns aggregate revenue
+      mixed with guest identifiers. Cannot be scoped until the endpoint is split.
+    route: Platform Engineering, then Data owner
+
+# Rules for adding a connector.
+policy:
+  - Every connector must have a named steward and a named data owner.
+  - A connector must declare the fields it exposes and the fields it never exposes.
+  - A connector must name the archetypes allowed to use it. Access is not implicit.
+  - A connector whose data class is internal-personal or above requires security review.
+  - A connector with no read-only path is not a candidate, regardless of use case.
+  - Adding a connector is a platform request, not an archetype request. Archetypes
+    select from this catalog; they do not extend it.

@@ -1,0 +1,65 @@
+venue_key,venue_id,venue_name,city,state,venue_format,bay_count,pos_system,opened_date
+1,V-001,Dallas 01,Dallas,TX,flagship,32,Toast,2024-03-11
+2,V-002,Austin 02,Austin,TX,flagship,24,Legacy,2023-02-20
+3,V-003,Houston 03,Houston,TX,standard,40,Legacy,2020-01-30
+4,V-004,Nashville 04,Nashville,TN,standard,28,Legacy,2021-05-09
+5,V-005,Atlanta 05,Atlanta,GA,standard,32,Toast,2022-12-24
+6,V-006,Charlotte 06,Charlotte,NC,standard,48,Toast,2021-05-24
+7,V-007,Denver 07,Denver,CO,standard,32,Toast,2019-11-14
+8,V-008,Phoenix 08,Phoenix,AZ,standard,32,Toast,2022-01-16
+9,V-009,Orlando 09,Orlando,FL,standard,40,Toast,2023-05-17
+10,V-010,Tampa 10,Tampa,FL,urban,24,Toast,2023-05-29
+11,V-011,San Diego 11,San Diego,CA,urban,24,Toast,2019-03-11
+12,V-012,Scottsdale 12,Scottsdale,AZ,urban,40,Legacy,2024-03-30
+13,V-013,Kansas City 13,Kansas City,MO,standard,24,Toast,2019-06-03
+14,V-014,Columbus 14,Columbus,OH,standard,28,Toast,2019-05-21
+15,V-015,Indianapolis 15,Indianapolis,IN,standard,32,Toast,2019-11-13
+16,V-016,Detroit 16,Detroit,MI,standard,48,Toast,2022-03-16
+17,V-017,Minneapolis 17,Minneapolis,MN,standard,40,Legacy,2023-02-17
+18,V-018,St. Louis 18,St. Louis,MO,standard,40,Legacy,2019-01-20
+19,V-019,Brooklyn 19,Brooklyn,NY,urban,24,Toast,2022-03-08
+20,V-020,Manhattan 20,Manhattan,NY,urban,32,Toast,2022-10-29
+21,V-021,Philadelphia 21,Philadelphia,PA,urban,28,Toast,2021-05-25
+22,V-022,Boston 22,Boston,MA,urban,28,Legacy,2023-08-04
+23,V-023,Chicago 23,Chicago,IL,flagship,24,Toast,2020-04-27
+24,V-024,Washington 24,Washington,DC,urban,28,Legacy,2023-11-21
+25,V-025,Seattle 25,Seattle,WA,standard,24,Toast,2024-05-15
+26,V-026,Portland 26,Portland,OR,standard,40,Toast,2023-09-13
+27,V-027,Las Vegas 27,Las Vegas,NV,flagship,20,Legacy,2024-03-31
+28,V-028,Salt Lake City 28,Salt Lake City,UT,standard,48,Toast,2020-09-01
+29,V-029,New Orleans 29,New Orleans,LA,urban,48,Toast,2024-04-04
+30,V-030,Richmond 30,Richmond,VA,standard,24,Toast,2019-05-03
+31,V-031,Raleigh 31,Raleigh,NC,standard,48,Toast,2020-05-02
+32,V-032,Savannah 32,Savannah,GA,urban,20,Legacy,2023-10-17
+33,V-033,Memphis 33,Memphis,TN,standard,48,Toast,2021-04-29
+34,V-034,Birmingham 34,Birmingham,AL,standard,40,Toast,2019-12-07
+35,V-035,Louisville 35,Louisville,KY,standard,28,Legacy,2023-12-24
+36,V-036,Milwaukee 36,Milwaukee,WI,standard,48,Toast,2019-07-25
+37,V-037,Dallas 37,Dallas,TX,flagship,28,Toast,2022-11-15
+38,V-038,Austin 38,Austin,TX,flagship,32,Toast,2022-06-09
+39,V-039,Houston 39,Houston,TX,standard,32,Toast,2021-09-20
+40,V-040,Nashville 40,Nashville,TN,standard,32,Toast,2020-07-18
+41,V-041,Atlanta 41,Atlanta,GA,standard,28,Toast,2020-02-04
+42,V-042,Charlotte 42,Charlotte,NC,standard,48,Toast,2023-05-30
+43,V-043,Denver 43,Denver,CO,standard,40,Legacy,2023-02-25
+44,V-044,Phoenix 44,Phoenix,AZ,standard,48,Legacy,2021-09-07
+45,V-045,Orlando 45,Orlando,FL,standard,48,Legacy,2021-03-13
+46,V-046,Tampa 46,Tampa,FL,urban,20,Toast,2020-11-08
+47,V-047,San Diego 47,San Diego,CA,urban,40,Toast,2022-10-17
+48,V-048,Scottsdale 48,Scottsdale,AZ,urban,28,Toast,2019-02-22
+49,V-049,Kansas City 49,Kansas City,MO,standard,20,Toast,2021-03-19
+50,V-050,Columbus 50,Columbus,OH,standard,40,Toast,2022-07-29
+51,V-051,Indianapolis 51,Indianapolis,IN,standard,48,Toast,2019-08-13
+52,V-052,Detroit 52,Detroit,MI,standard,20,Toast,2019-02-17
+53,V-053,Minneapolis 53,Minneapolis,MN,standard,48,Toast,2023-07-27
+54,V-054,St. Louis 54,St. Louis,MO,standard,24,Toast,2019-11-03
+55,V-055,Brooklyn 55,Brooklyn,NY,urban,20,Toast,2022-09-24
+56,V-056,Manhattan 56,Manhattan,NY,urban,40,Toast,2021-06-24
+57,V-057,Philadelphia 57,Philadelphia,PA,urban,20,Toast,2019-03-26
+58,V-058,Boston 58,Boston,MA,urban,40,Toast,2021-04-27
+59,V-059,Chicago 59,Chicago,IL,flagship,24,Toast,2022-01-05
+60,V-060,Washington 60,Washington,DC,urban,40,Toast,2021-03-25
+61,V-061,Seattle 61,Seattle,WA,standard,32,Toast,2019-08-30
+62,V-062,Portland 62,Portland,OR,standard,20,Legacy,2023-10-01
+63,V-063,Las Vegas 63,Las Vegas,NV,flagship,32,Toast,2022-08-15
+64,V-064,Salt Lake City 64,Salt Lake City,UT,standard,48,Toast,2019-01-26

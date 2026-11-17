@@ -1,119 +1,334 @@
-# FIELDIQ 4.1 — Operations Intelligence
+# AI Enablement Engineering — archetypes, governed connectors, and drift monitoring
 
-**A product-style operations intelligence demonstration for heavy-equipment dealership workflows.**
+**A working implementation of the Topgolf AI Enablement Engineer role (JR2023-23049).**
 
-FIELDIQ brings service, parts, rental, and fleet signals into one explainable operating experience. It is designed around a simple user journey: understand the operating picture, choose an operational playbook, inspect the records, test a target, and create a clear team huddle brief.
+The role is named after **archetypes**: reusable building blocks that let business teams
+build safe, working applications inside a gated AI-SDLC pipeline. This repository contains
+those building blocks, the governance that keeps them safe, and the tooling that retires
+them when they stop earning their place.
 
-> **Independence and data notice:** FIELDIQ is a self-directed portfolio demonstration inspired by heavy-equipment dealership workflows. It is not affiliated with, endorsed by, or connected to HOLT Group. All records and measures are synthetic and do not represent HOLT data, customers, employees, assets, or performance.
+> **Independence and data notice.** This is an independent portfolio project built for a
+> job application. It is not affiliated with, endorsed by, or connected to Topgolf
+> Entertainment Group or Callaway Brands. It has no access to any internal system. Every
+> venue, guest, membership, campaign and incident record here is synthetic.
+
+---
 
 ## Start here
 
-1. **Overview** — get the executive picture, key KPIs, branch comparisons, and service trends.
-2. **Operations Playbook** — choose a service, parts, or fleet workflow; inspect the highest-signal records; work through suggested team checks; and copy a huddle brief.
-3. **Decision Studio** — explore operational signals, adjust what-if targets, see the arithmetic gap, and copy a leadership-ready discussion brief.
-4. **Operations Explorer** — search and export the service, parts, rental, and equipment records behind the measures.
-5. **Semantic Model** — inspect fact-table grain, conformed dimensions, relationships, and plain-language metric definitions.
-6. **Data Quality** — review the validation checks executed by the reproducible pipeline.
-7. **Data Lineage** — trace selected measures from source fields through Gold transformations to the dashboard.
-8. **AI Analyst** — ask questions against a constrained set of documented metrics and inspect the formula and caveat returned.
-9. **Role Alignment / Architecture** — inspect implementation evidence, engineering decisions, and the production boundary.
+1. **Archetypes** — four real `SKILL.md` files, one retired and merged on usage evidence.
+2. **Connectors & MCP** — the governed connector catalog and a working MCP server.
+3. **Guardrails** — the deterministic engine, the 18-case adversarial suite, the secrets scan.
+4. **Pipeline & gates** — the seven-stage path to production, data classes, and triage.
+5. **Health & drift** — the weekly monitor that proposes keep, extend, merge, review, retire.
+6. **Enablement** — the readiness check, role paths, and office-hours formats.
+7. **Evidence map** — every responsibility in the role description, and what answers it.
+8. **Data & metrics** — the fixture, the metric catalog, and the executed quality checks.
 
-## Product experience highlights
+---
 
-- **One operating picture:** branch-aware KPIs, service revenue and intake trends, queue composition, parts fill, rental revenue, and fleet utilization.
-- **Operations Playbook:** service queue, parts fulfillment, and fleet deployment playbooks with record-level evidence, team questions, a checkable huddle list, and copyable briefing. The playbooks are review aids, not automated recommendations.
-- **Decision Studio:** three cross-functional operational signal cards; an interactive scenario workbench for parts fill, backlog reduction, and fleet utilization targets; a calculated gap analysis; and a copyable meeting brief.
-- **Explainable scenarios:** controls calculate target gaps directly from the current scope. They do not claim that one KPI causes another, forecast revenue, predict dates, or promise operational outcomes.
-- **Explore the evidence:** multi-entity search, filters, and CSV export for service work orders, parts orders, rental contracts, and equipment.
-- **Shared definitions:** metric descriptions, formulas, fact grain, ownership, caveats, and model relationships are visible to business and technical reviewers.
-- **Traceability:** interactive source-to-consumption paths for service revenue, parts fill rate, and fleet utilization.
-- **Constrained analyst:** deterministic question-to-metric routing; no LLM, arbitrary SQL execution, or unsupported answer generation.
-- **Responsive experience:** desktop and mobile navigation and layouts.
+## What is actually executable
 
-## Data and engineering foundation
+Nothing in this repository is a mock. Every claim below is produced by a command you can run.
 
-- Deterministic synthetic source generator and Bronze → Silver → Gold transformations in Python / Pandas.
-- Seven Gold tables: three dimensions and four facts, including `fact_fleet_day` at one row per equipment asset per calendar day.
-- Ten executable quality checks, with observed results embedded in the web snapshot.
-- SQL examples, semantic model specification, DAX measure starters, branch RLS design notes, and a Fabric PySpark validation notebook starter.
-- Pytest suite and GitHub Actions workflow.
-
-## Modeled data coverage
-
-- Period: **2025-01-01 through 2025-11-17** (321 calendar days)
-- 5 Texas branches: San Antonio, Austin, Dallas, Fort Worth, and Waco
-- 480 service work orders
-- 90 equipment assets
-- 250 rental contracts
-- 320 parts orders
-- 28,890 equipment-day rows in `fact_fleet_day` (90 assets × 321 days)
-
-All generated records use deterministic seed `58`.
-
-## Important metric definitions
-
-| Metric | Definition | Important limitation |
+| Artifact | Command | Result |
 |---|---|---|
-| Service revenue | Sum of labor + parts revenue for closed work orders | Synthetic modeled revenue, not audited accounting revenue |
-| Open service backlog | Count of work orders whose status is not Closed | Count only; no monetary valuation or SLA breach logic |
-| Average days to close | Average `days_open` for closed work orders | Generated elapsed days; excludes open work orders |
-| Parts fill rate | Total fulfilled units ÷ total requested units | Weighted by units; not an order-line on-time fill measure |
-| Modeled rental revenue | Rental days × daily rate | Not an invoice or recognized accounting amount |
-| Fleet utilization | Unique rented asset-days ÷ modeled available asset-days | Every asset-day is assumed available; maintenance and out-of-service time are not modeled |
+| Data pipeline | `python3 scripts/build_pipeline.py` | 4 dimensions, 5 facts, **17/17 quality checks pass** |
+| Guardrail engine | `python3 -m security.guardrails.guardrails --self-test` | **11/11 self-tests pass** |
+| Adversarial suite | `python3 -m security.adversarial.run_suite` | **18/18 cases caught**, 17 by two independent layers |
+| Secrets scan | `python3 -m security.guardrails.secrets_scan` | clean across the working tree; CI also scans git history |
+| Catalog validator | `python3 -m monitoring.validate_catalog` | 4 archetypes, 3 declined, 0 errors |
+| Health monitor | `python3 -m monitoring.health_report` | flags prompt drift in `shift-handover` (+17.3%) |
+| MCP server | `python3 -m platform.mcp_server.server` | stdio JSON-RPC, refuses unauthorised connector use |
+| Test suite | `python3 -m pytest tests -q` | **44 tests pass** |
+| Portal | `npm run build` then `npm start` | production build, 26.1 kB route |
 
-`fact_fleet_day` has a grain of one equipment asset per calendar day. If overlapping contracts exist for the same asset-day, the day counts once as rented. This avoids double-counting utilization, but it does not replace an effective-dated availability model with maintenance and downtime states.
+---
 
-## Rebuild the data and run tests
+## The archetype catalog
 
-Requires Python 3.10+.
+An archetype is the reusable unit. It packages engineering standards, governance and
+intake so a non-technical builder can start inside the pipeline instead of routing the
+idea to engineering.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python scripts/build_pipeline.py
-pytest -q
+```
+archetypes/
+  catalog.yaml                       # machine-readable source of truth
+  shift-handover/SKILL.md            # the reference implementation
+  shift-handover/guardrails.json     # executable rule manifest
+  shift-handover/scripts/scaffold.py # generates a new archetype
+  campaign-brief/SKILL.md
+  guest-frequency-anomaly/SKILL.md
+  retired/legacy-standup-summary/    # retired and merged, kept for provenance
+  references/
+    intake-questionnaire.md          # what a team must answer before building
+    spec-template.md                 # the contract every archetype satisfies
+    guardrails.md                    # how rules become executable checks
 ```
 
-The pipeline regenerates `data/bronze`, `data/silver`, `data/gold`, and `public/data/operations.json`.
+**Lifecycle:** `draft → pilot → active → deprecated → retired`
 
-## Run the web application
+**The catalog records decisions, not just state.** Every archetype carries a usage
+period, request volume, human rewrite rate, gate failure rate, support-question count,
+prompt size against a baseline, a steward, a review date, and a recorded decision with
+the reason and the person who accepted it.
 
-Requires Node.js 20+.
+**One archetype was retired and merged** (`legacy-standup-summary` → `shift-handover`)
+because usage showed 71% of its requests were shift-close intent, and the two archetypes
+produced conflicting output formats for the same incident log. Keeping both meant two
+answers to one question.
+
+**Three requests were declined on purpose**, each with a reason and a route, so they are
+not re-proposed every quarter: personalized pricing, automated safety triage, and an
+unsupervised guest-message autoresponder.
+
+### Scaffolding a new archetype
 
 ```bash
+python3 archetypes/shift-handover/scripts/scaffold.py \
+    --name my-archetype \
+    --title "My archetype" \
+    --data-class internal-aggregated \
+    --connector analytics.readonly
+```
+
+The scaffold refuses an invalid name, an invalid data class, and any connector that is
+not in the approved catalog.
+
+---
+
+## Governed connectors and MCP
+
+A connector is the only way an archetype reaches a data system. If it is not in the
+catalog, the archetype cannot use that system and the scope check fails.
+
+Each connector declares its data class, steward, data owner, authentication, runtime
+constraint, the fields it may expose, the fields it must **never** expose, and the
+archetypes permitted to use it.
+
+The MCP server implements the JSON-RPC 2.0 tool surface over stdio with no third-party
+dependencies, so it can run inside a constrained runtime. Three things make it governed
+rather than merely functional:
+
+1. **Access is not implicit.** A call naming an archetype that may not use the connector
+   is refused with the permitted set in the error.
+2. **`never_exposes` is enforced on every row**, not just documented.
+3. **There is no write path.** The server exposes reads only.
+
+Two connector requests are **blocked** with a stated reason: `crm.full` (no consent
+mapping the guardrail engine can verify) and `pos.legacy` (no row-level authorisation,
+returns revenue mixed with guest identifiers).
+
+---
+
+## Guardrails
+
+| Class | What it checks | Implementation |
+|---|---|---|
+| Scope | Fields touched vs. fields declared, checked in both directions | `security/guardrails/guardrails.py` |
+| Output | Structure, length bounds, prohibited content | `security/guardrails/guardrails.py` |
+| Policy | The output *set* against data-class policy, independent of the text | `security/guardrails/guardrails.py` |
+| Secrets | Credential patterns in the working tree | `security/guardrails/secrets_scan.py` |
+
+The engine fails closed. When it cannot prove an output is safe, it reports a finding
+rather than passing it. S1 and S2 findings block release; S3 is reported and fixed before
+the next release; S4 goes to the backlog.
+
+### What the gates do not prove
+
+A green gate means the output is **structurally safe**. It does not mean the output is
+**right**. Rules that need judgment about operational usefulness, tone, legal approval,
+or business intent stay human — which is why the pipeline keeps a human review stage
+instead of pretending the machine covers it.
+
+### The adversarial suite
+
+18 cases across six taxonomies: prompt injection, data exfiltration, jailbreak, policy
+violation, scope escape, and output manipulation. Each case names the rule it attacks,
+the severity if missed, and the expected behaviour.
+
+**What it honestly is:** a regression suite. Its value is that removing a rule flips the
+matching case to `MISSED` and CI fails. **What it is not:** proof that no attack exists.
+It does not use a live language model. The policy layer matches structured request
+patterns; the content layer exercises the real guardrail engine against the output a
+compliant-but-wrong implementation would have produced.
+
+---
+
+## The pipeline
+
+Seven stages, three of them human:
+
+1. **Intake** — the builder answers the questionnaire. Data class is set here, before any code exists.
+2. **Build** — from the archetype's scaffold. Standards and guardrails are wired in, not added later.
+3. **Automated gates** — unit tests, output schema, secrets scan, scope check.
+4. **Adversarial tests** — any case that gets through blocks release.
+5. **Human review** — the reviewer answers one question: what did the automated gates miss?
+6. **Staging** — one full week against recorded or synthetic data, with output logged.
+7. **Release and monitor** — released with a steward and a review date; a drop triggers review.
+
+### Data classes
+
+| Class | Examples | AI tools allowed | Required before release |
+|---|---|---|---|
+| Public | Venue hours, published offers, public FAQ | Approved assistants | Marketing review |
+| Internal, aggregated | Totals by venue, campaign funnel totals | Approved assistants, governed connectors | Standard gates and human review |
+| Internal, personal | Guest names, bookings, incident narratives | Only tools that keep data in the company environment | Standard gates, second reviewer, data owner sign-off |
+| Restricted | Minors, payments, safety records | None without written approval | Legal, security and the data owner |
+
+When in doubt, the app takes the higher class until a data owner confirms otherwise.
+
+### Finding triage
+
+Every finding routes to exactly one destination: **Security** (guest safety, data
+exposure, an automated safety decision — immediate), **Data owner** (class, consent,
+minor targeting, unclear source — same business day), **App steward** (scope,
+correctness, contract breach, gate failure — next working day), or **AI Enablement**
+(ambiguous or spanning — same business day, then routed).
+
+An S1 is a release blocker even if the output was never sent, because the capability
+exists and will be used.
+
+---
+
+## Health and drift monitoring
+
+The monitor answers one question every week: which archetypes are still worth keeping?
+
+It measures prompt size against a recorded baseline, human rewrite rate, gate failure
+rate, support-question load, request volume, and adversarial pass rate. It then proposes
+**keep, extend, merge, review, or retire**.
+
+**The monitor proposes. A human decides.** Where the proposal and the recorded steward
+decision disagree, the report says so explicitly rather than diverging silently. That is
+currently the case for `shift-handover`: the monitor flags 17.3% prompt growth, and the
+steward has already recorded a decision to extend it.
+
+Prompt bloat is tracked separately because it is how an archetype quietly degrades — every
+rule added makes the prompt longer, and past a threshold the model starts skipping rules
+rather than following all of them.
+
+---
+
+## The fixture
+
+The archetypes, connectors, guardrails and MCP server need something real-shaped to run
+against. That something is a deterministic synthetic fixture: **48,000 visits across 64
+venues, 4,200 guests, 2,600 memberships, 900 campaigns and 1,400 incidents over 331 days**,
+generated from seed `1847` and rebuilt byte-identically on every run.
+
+It is a fixture, not a claim about Topgolf's business. It exists so every governance
+control can be demonstrated against a real dataset with real grain, real referential
+integrity, and real violations to catch — including the minors-consent policy, which is
+enforced as a data-level check rather than a comment.
+
+### Metric definitions
+
+| Metric | Formula | Important limitation |
+|---|---|---|
+| Visits per member per month | Member visits ÷ active members ÷ months | Counts all visits in the period, not only visits at the member's home venue |
+| Average check | Σ check total ÷ count of visits | Modelled checkout totals, not audited revenue |
+| Cost per booked visit | Σ campaign cost ÷ Σ bookings | Blended across channels; does not model incrementality |
+| Marketing opt-out rate | Σ opt-outs ÷ Σ sends | Recorded at send time; later suppressions not modelled |
+| Membership lapse rate | Count lapsed ÷ count of memberships | Does not distinguish voluntary from involuntary lapse |
+| Average incident resolution | Average resolution minutes | Report-to-close handling time only; not a safety outcome measure |
+
+---
+
+## Retrieval: when to use it and when not to
+
+[`rag/when-to-use-retrieval.md`](rag/when-to-use-retrieval.md) is a decision document,
+not a build. The rule: **retrieval is for finding text, a query is for finding rows, a
+script is for finding a known computation.**
+
+It explains the three failure modes of reaching for retrieval by default — summing
+numbers over chunks that does not reconcile, retrieving structured files as free text
+and losing the fields the enforcement depended on, and retrieving over a corpus nobody
+owns — and the three conditions a retrieval path must satisfy before it is allowed
+inside the pipeline.
+
+[`rag/minimal_retrieval.py`](rag/minimal_retrieval.py) implements the one case where
+retrieval is genuinely right in this repository: searching the bounded, owned, cited
+documentation corpus. It is a keyword index, not a vector database, and the upgrade
+trigger is documented.
+
+---
+
+## Setup
+
+Requires Python 3.10+ and Node.js 20+.
+
+```bash
+# Python side
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python3 scripts/build_pipeline.py
+python3 -m scripts.build_portal_snapshot
+python3 -m pytest tests -q
+
+# Web side
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000. For a production build, run `npm run build`. `npm run lint` runs the TypeScript compiler in no-emit mode.
+Open http://localhost:3000.
+
+### Individual checks
+
+```bash
+python3 -m security.guardrails.guardrails --self-test   # guardrail engine
+python3 -m security.adversarial.run_suite               # adversarial suite
+python3 -m security.guardrails.secrets_scan             # secrets scan
+python3 -m monitoring.validate_catalog                   # catalog integrity
+python3 -m monitoring.health_report                     # health and drift
+python3 -m rag.minimal_retrieval "how do I retire an archetype"
+```
+
+---
 
 ## Technical implementation boundary
 
-**Implemented in this repository:** deterministic Python data generation; Bronze / Silver / Gold CSV layers; seven Gold tables; ten executed quality checks; multi-entity web explorer; branch-aware scorecard; Decision Studio scenarios and briefing; Operations Playbook with three evidence-led team huddles; metric catalog; three KPI lineage paths; deterministic analyst prototype; tests; GitHub Actions workflow.
+**Implemented and executable in this repository:** deterministic Python pipeline with a
+Bronze / Silver / Gold model; 17 executed quality checks; four archetype `SKILL.md`
+files with executable guardrail manifests; a scaffold generator; a catalog validator
+that fails the build on a missing owner, steward, class, connector or review date; a
+governed connector catalog; a working MCP stdio server with enforced connector
+governance and field redaction; a deterministic guardrail engine with scope, output and
+policy checks; an 18-case adversarial suite across six taxonomies; a secrets scanner; a
+health and drift monitor that reconciles proposals against recorded decisions; a review
+rubric and triage policy; a retrieval judgment document; a Next.js portal that renders
+only figures that passed their own checks; 44 tests; and a CI workflow that runs all of
+it on every pull request.
 
-**Starter / design assets:** SQL examples require source/platform adaptation; DAX is a measure library, not a published semantic model; RLS / OLS are documented patterns, not active enforcement; Fabric notebook is a starter and has not run in a Fabric workspace; no Power BI report or semantic model is published.
+**Documented design, not deployed:** the constrained runtime, connector authentication
+and identity model, and the release mechanics are described rather than built. The review
+rubric and triage rules are guidance for a human, not enforcement in code. The
+adversarial suite is a regression suite over a fixture, not a live red-team of a
+deployed archetype.
 
-**Not claimed:** no HOLT system access, no live operational data, no real-time integration, no production identity/security, no Fabric Lakehouse deployment, no published Power BI semantic model, and no LLM-backed analyst.
+**Synthetic:** all archetype usage figures, champion counts, and request volumes. They
+exist to demonstrate the lifecycle logic — retire, merge, extend, decline — and are
+labelled as synthetic everywhere they appear.
 
-## Deploy to Vercel
+**Not claimed:** no Topgolf internal system access, no live operational data, no
+production identity or security, no deployed MCP host, no published semantic model, and
+no LLM-backed analyst.
 
-The committed JSON snapshot allows the Next.js app to build without Python or a database at Vercel build time.
+---
 
-- Framework preset: Next.js
-- Install command: `npm install`
-- Build command: `npm run build`
-- Environment variables: none required for this demo
+## A five-minute walkthrough
 
-The Python pipeline runs locally or in a separate scheduled environment. Vercel does not execute it automatically.
+1. **Lead with the archetypes.** Open one `SKILL.md` and read the hard rules aloud.
+   That is the artefact the role is named after.
+2. **Show the catalog.** Four shipped, one retired and merged, three declined with a
+   route. The lifecycle is the argument.
+3. **Open the MCP server.** Call a tool as an archetype that is not permitted to use its
+   connector, and show the refusal.
+4. **Run the adversarial suite.** Show that a rule removal breaks the build.
+5. **Open the health report.** Show the drift flag and the reconciliation against the
+   recorded steward decision.
+6. **Finish on the evidence map.** Nine responsibilities, and for each one: what is
+   built, and where the honest limit is.
 
-## Suggested five-minute walkthrough
-
-1. **Lead with the product:** explain how service, parts, rental, and fleet signals are presented together.
-2. **Open Operations Playbook:** choose a workflow, inspect the evidence, work through the team checklist, and copy the huddle brief.
-3. **Open Decision Studio:** move the scenario sliders, explain the calculated target gaps, and copy the leadership brief.
-4. **Prove the numbers:** inspect the matching records in Operations Explorer.
-5. **Explain trust:** show metric definitions, grain, quality checks, and lineage.
-6. **Discuss engineering:** explain the Bronze / Silver / Gold pipeline and how the semantic model could be operationalized in Fabric / Power BI.
-
-Keep the synthetic-data notice visible during the walkthrough. The demo illustrates a product concept and engineering implementation; it is not a live operational system.
+Keep the synthetic-data notice visible. The project illustrates a working platform; it
+is not a live Topgolf system.

@@ -1,0 +1,192 @@
+# Archetype catalog
+#
+# This file is the machine-readable source of truth for the archetype catalog.
+# The catalog page in the web layer and the archetype health monitor both read it.
+#
+# Lifecycle states:
+#   draft     - intake answered, spec not complete, not usable against real data
+#   pilot     - usable against real data with an owner, gates still running
+#   active    - released, monitored, owned by an app steward
+#   deprecated- still available, superseded, scheduled for removal
+#   retired   - removed from service, kept for provenance
+#
+# Usage figures below are synthetic and exist to demonstrate the lifecycle logic:
+# retire, merge, and extend decisions are driven by evidence, not opinion.
+
+catalog:
+  version: "3.2.0"
+  updated: "2026-11-10"
+  owner: "AI Enablement"
+
+archetypes:
+  - name: shift-handover
+    title: Shift handover
+    path: archetypes/shift-handover/SKILL.md
+    status: active
+    version: "1.4.0"
+    data_class: internal-personal
+    connector: ops.readonly
+    owner: Venue Operations
+    data_owner: Guest Experience
+    steward: Venue Ops Tech Lead
+    last_reviewed: "2026-11-02"
+    next_review: "2026-12-02"
+    description: >-
+      Turns a venue shift incident log into a three-line handover for the next shift.
+      The highest-frequency archetype in the catalog.
+    usage:
+      period: "8 weeks to 2026-11-10"
+      requests: 1840
+      weekly_avg: 230
+      human_rewrite_rate: 0.09
+      gate_failure_rate: 0.04
+      support_questions: 31
+    health:
+      prompt_bytes: 4820
+      baseline_prompt_bytes: 4110
+      drift_flag: false
+      adversarial_pass_rate: 1.0
+    decision: extend
+    decision_reason: >-
+      Most-used archetype with a rising rewrite rate in the last two weeks. Extending it
+      with a fourth optional line for multi-site leads, rather than adding a new
+      archetype, because the request pattern is identical.
+    decision_accepted_by: Venue Ops Tech Lead
+    decision_date: "2026-11-02"
+    decision_review_due: "2026-12-02"
+
+  - name: campaign-brief
+    title: Campaign brief builder
+    path: archetypes/campaign-brief/SKILL.md
+    status: pilot
+    version: "0.9.0"
+    data_class: internal-personal
+    connector: marketing.readonly
+    owner: Marketing Operations
+    data_owner: Guest Experience
+    steward: Marketing Platform Owner
+    last_reviewed: "2026-11-09"
+    next_review: "2026-11-23"
+    description: >-
+      Builds a campaign brief from an approved audience, offer and goal, and attaches a
+      claims check and policy check before a human sends anything.
+    usage:
+      period: "5 weeks to 2026-11-10"
+      requests: 412
+      weekly_avg: 82
+      human_rewrite_rate: 0.22
+      gate_failure_rate: 0.14
+      support_questions: 58
+    health:
+      prompt_bytes: 6140
+      baseline_prompt_bytes: 5600
+      drift_flag: true
+      adversarial_pass_rate: 1.0
+    decision: review
+    decision_reason: >-
+      Highest support-question rate in the catalog and a 14 percent gate failure rate.
+      Two causes are known: the claims check has no approved-source registry to check
+      against, and the frequency cap is read from a spreadsheet rather than the sending
+      platform. Both are platform fixes, not archetype fixes.
+    decision_accepted_by: Marketing Platform Owner
+    decision_date: "2026-11-09"
+    decision_review_due: "2026-11-23"
+
+  - name: guest-frequency-anomaly
+    title: Guest frequency anomaly
+    path: archetypes/guest-frequency-anomaly/SKILL.md
+    status: active
+    version: "1.1.0"
+    data_class: internal-aggregated
+    connector: analytics.readonly
+    owner: Guest Engagement
+    data_owner: Guest Experience
+    steward: Data Platform Owner
+    last_reviewed: "2026-11-05"
+    next_review: "2026-12-05"
+    description: >-
+      Detects guests whose visit frequency dropped against their own segment baseline
+      and proposes a win-back path inside the frequency cap.
+    usage:
+      period: "8 weeks to 2026-11-10"
+      requests: 296
+      weekly_avg: 37
+      human_rewrite_rate: 0.14
+      gate_failure_rate: 0.02
+      support_questions: 19
+    health:
+      prompt_bytes: 3980
+      baseline_prompt_bytes: 3760
+      drift_flag: false
+      adversarial_pass_rate: 1.0
+    decision: keep
+    decision_reason: >-
+      Low gate failure rate, low support load, and it is the only archetype currently
+      reading internal-aggregated data, so it is the proof that the data-class model
+      loosens as intended.
+    decision_accepted_by: Data Platform Owner
+    decision_date: "2026-11-05"
+    decision_review_due: "2026-12-05"
+
+  - name: legacy-standup-summary
+    title: Legacy standup summary
+    path: archetypes/retired/legacy-standup-summary/SKILL.md
+    status: retired
+    version: "0.3.1"
+    data_class: internal-personal
+    connector: ops.readonly
+    owner: Venue Operations
+    data_owner: Guest Experience
+    steward: Venue Ops Tech Lead
+    last_reviewed: "2026-09-18"
+    next_review: null
+    retired_on: "2026-10-05"
+    superseded_by: shift-handover
+    retirement_reason: >
+      71 percent of requests were shift-close intent, which shift-handover already
+      covered with a stricter format. Keeping both meant two answers to one question.
+      Merged rather than deleted so the provenance stays readable.
+    description: >-
+      Summarised a team standup transcript into action items. Retired and merged into
+      shift-handover after the usage review showed the two archetypes were answering
+      the same question with different formats.
+    usage:
+      period: "6 weeks to 2026-09-18"
+      requests: 212
+      weekly_avg: 35
+      human_rewrite_rate: 0.34
+      gate_failure_rate: 0.11
+      support_questions: 22
+    health:
+      prompt_bytes: 5210
+      baseline_prompt_bytes: 5210
+      drift_flag: false
+      adversarial_pass_rate: null
+    decision: retire
+    decision_reason: >-
+      71 percent of requests were shift-close intent, which shift-handover already
+      covered with a stricter format. Keeping both meant two answers to one question.
+    decision_accepted_by: Venue Ops Tech Lead
+    decision_date: "2026-10-05"
+    decision_review_due: null
+
+# Archetypes that were requested and deliberately not built.
+declined:
+  - name: personalized-pricing
+    requester: Commercial
+    reason: >-
+      Would set different prices for different guests. Excluded by policy, not by
+      technical limitation. Recorded here so it is not re-proposed each quarter.
+    route: Commercial and Legal
+  - name: automated-safety-triage
+    requester: Venue Operations
+    reason: >-
+      Would close or resolve a safety incident without a human decision. Never
+      automated, regardless of evidence quality.
+    route: Security and Venue Operations
+  - name: guest-message-autoresponder
+    requester: Guest Services
+    reason: >-
+      Would reply to guest messages unsupervised. A drafted reply with a human
+      approval step is approved; an automatic reply is not.
+    route: Guest Services, with legal review of the response policy

@@ -1,0 +1,17 @@
+{
+  "name": "campaign-brief",
+  "data-class": "internal-personal",
+  "allowed-fields": ["guest_key", "age_band", "consented_email", "audience_segment", "tier_name", "sends", "opens", "clicks", "bookings", "opt_outs", "cost_total"],
+  "never-read-fields": ["card_brand", "card_last_four", "guest_name", "guest_phone"],
+  "output": {
+    "type": "text",
+    "prohibited_patterns": ["email_address", "phone_number", "credit_card", "external_url"],
+    "requires": ["Claims check", "Policy check"]
+  },
+  "policy": {
+    "enabled": true,
+    "require_consent": true,
+    "exclude_age_bands": ["13-17"],
+    "targeting_field": "consented_email"
+  }
+}

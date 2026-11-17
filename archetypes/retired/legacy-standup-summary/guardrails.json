@@ -1,0 +1,13 @@
+{
+  "name": "legacy-standup-summary",
+  "data-class": "internal-personal",
+  "allowed-fields": ["incident_id", "venue_key", "date_key", "category", "severity", "resolution_minutes", "escalated"],
+  "never-read-fields": ["guest_name", "guest_email", "staff_medical_notes", "incident_investigation_notes"],
+  "output": {
+    "type": "text",
+    "prohibited_patterns": ["guest_name", "email_address", "phone_number", "credit_card", "external_url"]
+  },
+  "policy": {
+    "enabled": false
+  }
+}

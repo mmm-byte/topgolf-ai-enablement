@@ -1,0 +1,65 @@
+venue_id,venue_name,city,state,venue_format,opened_date,bay_count,pos_system
+V-001,Dallas 01,Dallas,TX,flagship,2024-03-11,32,Toast
+V-002,Austin 02,Austin,TX,flagship,2023-02-20,24,Legacy
+V-003,Houston 03,Houston,TX,standard,2020-01-30,40,Legacy
+V-004,Nashville 04,Nashville,TN,standard,2021-05-09,28,Legacy
+V-005,Atlanta 05,Atlanta,GA,standard,2022-12-24,32,Toast
+V-006,Charlotte 06,Charlotte,NC,standard,2021-05-24,48,Toast
+V-007,Denver 07,Denver,CO,standard,2019-11-14,32,Toast
+V-008,Phoenix 08,Phoenix,AZ,standard,2022-01-16,32,Toast
+V-009,Orlando 09,Orlando,FL,standard,2023-05-17,40,Toast
+V-010,Tampa 10,Tampa,FL,urban,2023-05-29,24,Toast
+V-011,San Diego 11,San Diego,CA,urban,2019-03-11,24,Toast
+V-012,Scottsdale 12,Scottsdale,AZ,urban,2024-03-30,40,Legacy
+V-013,Kansas City 13,Kansas City,MO,standard,2019-06-03,24,Toast
+V-014,Columbus 14,Columbus,OH,standard,2019-05-21,28,Toast
+V-015,Indianapolis 15,Indianapolis,IN,standard,2019-11-13,32,Toast
+V-016,Detroit 16,Detroit,MI,standard,2022-03-16,48,Toast
+V-017,Minneapolis 17,Minneapolis,MN,standard,2023-02-17,40,Legacy
+V-018,St. Louis 18,St. Louis,MO,standard,2019-01-20,40,Legacy
+V-019,Brooklyn 19,Brooklyn,NY,urban,2022-03-08,24,Toast
+V-020,Manhattan 20,Manhattan,NY,urban,2022-10-29,32,Toast
+V-021,Philadelphia 21,Philadelphia,PA,urban,2021-05-25,28,Toast
+V-022,Boston 22,Boston,MA,urban,2023-08-04,28,Legacy
+V-023,Chicago 23,Chicago,IL,flagship,2020-04-27,24,Toast
+V-024,Washington 24,Washington,DC,urban,2023-11-21,28,Legacy
+V-025,Seattle 25,Seattle,WA,standard,2024-05-15,24,Toast
+V-026,Portland 26,Portland,OR,standard,2023-09-13,40,Toast
+V-027,Las Vegas 27,Las Vegas,NV,flagship,2024-03-31,20,Legacy
+V-028,Salt Lake City 28,Salt Lake City,UT,standard,2020-09-01,48,Toast
+V-029,New Orleans 29,New Orleans,LA,urban,2024-04-04,48,Toast
+V-030,Richmond 30,Richmond,VA,standard,2019-05-03,24,Toast
+V-031,Raleigh 31,Raleigh,NC,standard,2020-05-02,48,Toast
+V-032,Savannah 32,Savannah,GA,urban,2023-10-17,20,Legacy
+V-033,Memphis 33,Memphis,TN,standard,2021-04-29,48,Toast
+V-034,Birmingham 34,Birmingham,AL,standard,2019-12-07,40,Toast
+V-035,Louisville 35,Louisville,KY,standard,2023-12-24,28,Legacy
+V-036,Milwaukee 36,Milwaukee,WI,standard,2019-07-25,48,Toast
+V-037,Dallas 37,Dallas,TX,flagship,2022-11-15,28,Toast
+V-038,Austin 38,Austin,TX,flagship,2022-06-09,32,Toast
+V-039,Houston 39,Houston,TX,standard,2021-09-20,32,Toast
+V-040,Nashville 40,Nashville,TN,standard,2020-07-18,32,Toast
+V-041,Atlanta 41,Atlanta,GA,standard,2020-02-04,28,Toast
+V-042,Charlotte 42,Charlotte,NC,standard,2023-05-30,48,Toast
+V-043,Denver 43,Denver,CO,standard,2023-02-25,40,Legacy
+V-044,Phoenix 44,Phoenix,AZ,standard,2021-09-07,48,Legacy
+V-045,Orlando 45,Orlando,FL,standard,2021-03-13,48,Legacy
+V-046,Tampa 46,Tampa,FL,urban,2020-11-08,20,Toast
+V-047,San Diego 47,San Diego,CA,urban,2022-10-17,40,Toast
+V-048,Scottsdale 48,Scottsdale,AZ,urban,2019-02-22,28,Toast
+V-049,Kansas City 49,Kansas City,MO,standard,2021-03-19,20,Toast
+V-050,Columbus 50,Columbus,OH,standard,2022-07-29,40,Toast
+V-051,Indianapolis 51,Indianapolis,IN,standard,2019-08-13,48,Toast
+V-052,Detroit 52,Detroit,MI,standard,2019-02-17,20,Toast
+V-053,Minneapolis 53,Minneapolis,MN,standard,2023-07-27,48,Toast
+V-054,St. Louis 54,St. Louis,MO,standard,2019-11-03,24,Toast
+V-055,Brooklyn 55,Brooklyn,NY,urban,2022-09-24,20,Toast
+V-056,Manhattan 56,Manhattan,NY,urban,2021-06-24,40,Toast
+V-057,Philadelphia 57,Philadelphia,PA,urban,2019-03-26,20,Toast
+V-058,Boston 58,Boston,MA,urban,2021-04-27,40,Toast
+V-059,Chicago 59,Chicago,IL,flagship,2022-01-05,24,Toast
+V-060,Washington 60,Washington,DC,urban,2021-03-25,40,Toast
+V-061,Seattle 61,Seattle,WA,standard,2019-08-30,32,Toast
+V-062,Portland 62,Portland,OR,standard,2023-10-01,20,Legacy
+V-063,Las Vegas 63,Las Vegas,NV,flagship,2022-08-15,32,Toast
+V-064,Salt Lake City 64,Salt Lake City,UT,standard,2019-01-26,48,Toast

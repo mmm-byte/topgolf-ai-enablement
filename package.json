@@ -1,13 +1,21 @@
 {
-  "name": "fieldiq-operations-intelligence",
-  "version": "4.1.0",
+  "name": "topgolf-ai-enablement",
+  "version": "5.0.0",
   "private": true,
+  "description": "AI enablement engineering portfolio: archetypes, governed connectors, guardrails and drift monitoring for a gated AI-SDLC pipeline.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "data": "python3 scripts/build_pipeline.py",
+    "test": "python3 -m pytest tests -q",
+    "guardrails": "python3 -m security.guardrails.guardrails --self-test",
+    "adversarial": "python3 -m security.adversarial.run_suite",
+    "health": "python3 -m monitoring.health_report",
+    "catalog": "python3 -m monitoring.validate_catalog",
+    "secrets": "python3 -m security.guardrails.secrets_scan"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
