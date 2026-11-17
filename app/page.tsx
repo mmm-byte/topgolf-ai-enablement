@@ -10,6 +10,8 @@ import ArchitectureGraph from "./architecture/ArchitectureGraph";
 import DataModelExplorer from "./architecture/DataModelExplorer";
 import McpInspector from "./architecture/McpInspector";
 import PipelineFlow from "./architecture/PipelineFlow";
+import PlatformMap from "./architecture/PlatformMap";
+import type { Topology } from "./architecture/types";
 import TraceExplorer from "./architecture/TraceExplorer";
 import data from "../public/data/operations.json";
 
@@ -47,33 +49,6 @@ type HealthRow = {
 type AdvResult = {
   id: string; taxonomy: string; rule: string; expected: string; status: string;
   defence_in_depth: boolean; severity_if_missed: string; matched_rules: string[];
-};
-type Topology = {
-  layers: { id: string; label: string; order: number; description: string }[];
-  nodes: {
-    id: string; layer: string; label: string; kind: string; detail: string;
-    source: string; persona?: string; constraint?: string; protocol?: string;
-    tools?: number; checks?: number; cases?: number; taxonomies?: number;
-    corpus?: number; count?: number; declined?: number; version?: string;
-    registry_unit?: string;
-    tables?: number; data_class?: string; steward?: string; connector_id?: string;
-  }[];
-  edges: {
-    id: string; source: string; target: string; label: string; kind: "flow" | "blocked";
-    detail: string; payload: string; guarded_by: string;
-  }[];
-  tables: {
-    name: string; layer: string; grain: string; purpose: string;
-    key: string; rows?: number; joins: string[];
-  }[];
-  mcp_tools: {
-    name: string; connector: string; data_class: string; description: string;
-    arguments: Record<string, string>; returns: string; guards: string[];
-  }[];
-  mcp_protocol: {
-    protocol_version: string; transport: string; methods: string[]; server: string;
-  };
-  stats: { nodes: number; edges: number; gold_tables: number; mcp_tools: number };
 };
 type QualityCheck = { name: string; status: string; description: string; observed: string };
 type Metric = { name: string; formula: string; description: string; grain: string; owner: string; caveat: string };
@@ -245,6 +220,132 @@ function Overview({ go }: { go: (id: string) => void }) {
   const a = snapshot.metadata.artifacts;
   const k = snapshot.kpis;
 
+  const domains = [
+    {
+      id: "archetypes", title: "Archetypes", icon: "boxes" as const, layer: "Catalogs",
+      question: "What reusable building blocks does a team build from, and how does the catalog know when to extend, merge or retire one of them?",
+      facts: [
+        { label: "Shipped", value: String(a.archetypes) },
+        { label: "Declined", value: String(a.archetypes_declined) },
+        { label: "Retired and merged", value: "1" },
+      ],
+      covers: [
+        "Real SKILL.md files with frontmatter, preconditions, hard rules, refusal behaviour and an escalation route.",
+        "A shared intake questionnaire so a non-technical builder starts inside the pipeline.",
+        "A spec template every archetype must satisfy.",
+        "A lifecycle that records who decided what, and when the decision is due again.",
+        "Three requests declined on purpose, each with a reason and a route.",
+      ],
+      files: [
+        { path: "archetypes/catalog.yaml", what: "The machine-readable catalog: usage evidence, steward, review date, recorded decision." },
+        { path: "archetypes/shift-handover/SKILL.md", what: "The reference archetype, with six hard rules and a refusal table." },
+        { path: "archetypes/references/intake-questionnaire.md", what: "What a team must answer before anything is built." },
+        { path: "archetypes/shift-handover/scripts/scaffold.py", what: "Generates a complete, already-gated archetype folder." },
+      ],
+    },
+    {
+      id: "connectors", title: "Connectors & MCP", icon: "plug" as const, layer: "Runtime",
+      question: "How does an agent reach an internal system without becoming a path around every control?",
+      facts: [
+        { label: "Approved connectors", value: String(a.connectors) },
+        { label: "MCP tools", value: "5" },
+        { label: "Blocked requests", value: String(a.connectors_pending) },
+      ],
+      covers: [
+        "Each connector declares its data class, steward, data owner, auth, runtime and the fields it may expose.",
+        "Each connector declares the fields it must never expose, and the server strips them from every row.",
+        "Each tool is bound to exactly one connector. Access is not implicit.",
+        "A call naming an archetype that may not use the connector is refused, with the permitted set in the error.",
+        "There is no write path anywhere in the server.",
+      ],
+      files: [
+        { path: "platform/connectors/catalog.yaml", what: "Five approved connectors and two blocked requests with reasons." },
+        { path: "platform/mcp_server/server.py", what: "JSON-RPC 2.0 over stdio with enforced connector governance and redaction." },
+      ],
+    },
+    {
+      id: "guardrails", title: "Guardrails", icon: "shield" as const, layer: "Control plane",
+      question: "What actually enforces the rules, and what does it honestly fail to enforce?",
+      facts: [
+        { label: "Cases caught", value: `${a.adversarial_passed}/${a.adversarial_cases}` },
+        { label: "Taxonomies", value: "6" },
+        { label: "Self-tests", value: "11/11" },
+      ],
+      covers: [
+        "Scope: fields touched compared against fields declared, checked in both directions.",
+        "Output: structure, length bounds and prohibited content checked against the source identifier list.",
+        "Policy: the output set checked against data-class rules, independently of the output text.",
+        "Adversarial cases across injection, exfiltration, jailbreak, policy, scope and output manipulation.",
+        "An explicit statement of which rules remain human, and why the human stage exists.",
+      ],
+      files: [
+        { path: "security/guardrails/guardrails.py", what: "The deterministic engine: scope, output and policy checks that fail closed." },
+        { path: "security/adversarial/cases.json", what: "Eighteen attack cases, each naming the rule it attacks." },
+        { path: "security/adversarial/run_suite.py", what: "The runner that proves a rule removal breaks the build." },
+        { path: "security/guardrails/secrets_scan.py", what: "Credential patterns in the working tree." },
+      ],
+    },
+    {
+      id: "data", title: "Data layer", icon: "database" as const, layer: "Data layer",
+      question: "Where does every published number come from, and how do you know it reconciles?",
+      facts: [
+        { label: "Quality checks", value: `${a.quality_passed}/${a.quality_checks}` },
+        { label: "Gold tables", value: String(Object.keys(snapshot.metadata.gold_tables).length) },
+        { label: "Visits modelled", value: new Intl.NumberFormat("en-US").format(k.total_visits) },
+      ],
+      covers: [
+        "Bronze keeps the source-shaped extract so the starting point stays inspectable.",
+        "Silver types, validates and rejects malformed rows, counting each rejection by reason.",
+        "Gold conforms four dimensions and five facts with declared grain on every table.",
+        "A revenue reconciliation check between Silver and Gold, so a mismatch fails the build.",
+        "A minors-consent policy enforced as a data-level check rather than a comment.",
+      ],
+      files: [
+        { path: "scripts/build_pipeline.py", what: "Deterministic generation and transformation, seed 1847, rebuilt byte-identically." },
+        { path: "public/data/operations.json", what: "The single snapshot the portal renders, carrying only gated figures." },
+      ],
+    },
+    {
+      id: "enablement", title: "Enablement", icon: "users" as const, layer: "Experience",
+      question: "How do teams across the company actually get more done with AI, rather than just receiving a tool?",
+      facts: [
+        { label: "Role paths", value: "6" },
+        { label: "Readiness areas", value: "5" },
+        { label: "Office-hour formats", value: "3" },
+      ],
+      covers: [
+        "A readiness check that routes each person to a starting point rather than a course.",
+        "Six role paths, each starting from a task the role already does every week.",
+        "Walkthroughs, office hours and a reviewed prompt library, with the reasoning for each format.",
+        "The rule that a prompt is published only after a reviewer checks accuracy, data handling and tone.",
+      ],
+      files: [
+        { path: "review/ai-output-review-rubric.md", what: "The reviewer rubric, organised around what the gates missed." },
+        { path: "review/gate-finding-triage.md", what: "Four-way routing, severity scale and response windows." },
+      ],
+    },
+    {
+      id: "pipeline", title: "Pipeline", icon: "workflow" as const, layer: "Control plane",
+      question: "What has to be true before anything reaches a guest, and who decides at each step?",
+      facts: [
+        { label: "Stages", value: "7" },
+        { label: "Human stages", value: "3" },
+        { label: "Escalation routes", value: "4" },
+      ],
+      covers: [
+        "Seven stages from intake to monitoring, with the automated and human ones marked separately.",
+        "A release gate that a personal-data application must clear with a second reviewer.",
+        "Four escalation routes with a severity and a response clock on each.",
+        "A rule that an S1 is a release blocker even if the output was never sent.",
+      ],
+      files: [
+        { path: "archetypes/references/spec-template.md", what: "The contract an archetype must satisfy, with the release gate." },
+        { path: "monitoring/health_report.py", what: "The weekly drift monitor that proposes keep, extend, merge, review or retire." },
+        { path: "monitoring/validate_catalog.py", what: "Fails the build when an archetype is missing an owner, steward, class or review date." },
+      ],
+    },
+  ];
+
   const pillars = [
     {
       icon: Boxes,
@@ -274,6 +375,22 @@ function Overview({ go }: { go: (id: string) => void }) {
 
   return (
     <>
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Platform map</p>
+              <h2>Six domains, and what each one answers</h2>
+            </div>
+            <p>
+              One place to start. Each domain names the question it answers, the numbers
+              behind it, and the files that implement it.
+            </p>
+          </div>
+          <PlatformMap topology={snapshot.governance.topology} domains={domains} />
+        </div>
+      </section>
+
       <section className="block">
         <div className="wrap">
           <div className="block-head">
