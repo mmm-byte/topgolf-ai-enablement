@@ -54,6 +54,8 @@ def build() -> dict:
     adversarial = _run_json("security.adversarial.run_suite")
     catalog_validation = _run_json("monitoring.validate_catalog")
 
+    topology = _run_json("platform.topology.topology")
+
     snapshot["governance"] = {
         "archetype_catalog": {
             "version": (catalog.get("catalog") or {}).get("version", "unknown"),
@@ -71,6 +73,7 @@ def build() -> dict:
         "health": health,
         "adversarial": adversarial,
         "catalog_validation": catalog_validation,
+        "topology": topology,
     }
 
     snapshot["metadata"]["artifacts"] = {

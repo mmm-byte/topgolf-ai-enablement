@@ -6,6 +6,11 @@ import {
   CircleHelp, ClipboardList, Database, FileCheck2, Gauge, Plug, ShieldCheck,
   Table2, Target, Users, Workflow,
 } from "lucide-react";
+import ArchitectureGraph from "./architecture/ArchitectureGraph";
+import DataModelExplorer from "./architecture/DataModelExplorer";
+import McpInspector from "./architecture/McpInspector";
+import PipelineFlow from "./architecture/PipelineFlow";
+import TraceExplorer from "./architecture/TraceExplorer";
 import data from "../public/data/operations.json";
 
 type Usage = {
@@ -43,6 +48,33 @@ type AdvResult = {
   id: string; taxonomy: string; rule: string; expected: string; status: string;
   defence_in_depth: boolean; severity_if_missed: string; matched_rules: string[];
 };
+type Topology = {
+  layers: { id: string; label: string; order: number; description: string }[];
+  nodes: {
+    id: string; layer: string; label: string; kind: string; detail: string;
+    source: string; persona?: string; constraint?: string; protocol?: string;
+    tools?: number; checks?: number; cases?: number; taxonomies?: number;
+    corpus?: number; count?: number; declined?: number; version?: string;
+    registry_unit?: string;
+    tables?: number; data_class?: string; steward?: string; connector_id?: string;
+  }[];
+  edges: {
+    id: string; source: string; target: string; label: string; kind: "flow" | "blocked";
+    detail: string; payload: string; guarded_by: string;
+  }[];
+  tables: {
+    name: string; layer: string; grain: string; purpose: string;
+    key: string; rows?: number; joins: string[];
+  }[];
+  mcp_tools: {
+    name: string; connector: string; data_class: string; description: string;
+    arguments: Record<string, string>; returns: string; guards: string[];
+  }[];
+  mcp_protocol: {
+    protocol_version: string; transport: string; methods: string[]; server: string;
+  };
+  stats: { nodes: number; edges: number; gold_tables: number; mcp_tools: number };
+};
 type QualityCheck = { name: string; status: string; description: string; observed: string };
 type Metric = { name: string; formula: string; description: string; grain: string; owner: string; caveat: string };
 type Venue = {
@@ -68,6 +100,7 @@ const snapshot = data as unknown as {
     health: { archetypes: HealthRow[]; action_counts: Record<string, number>; drifted: string[]; policy: string };
     adversarial: { total: number; passed: number; missed: number; defence_in_depth: number; taxonomies: string[]; results: AdvResult[] };
     catalog_validation: { valid: boolean; errors: string[]; warnings: string[]; archetypes: number };
+    topology: Topology;
   };
 };
 
@@ -77,10 +110,14 @@ const pct = (n: number, digits = 1) => `${(n || 0).toFixed(digits)}%`;
 
 const SECTIONS = [
   { id: "Overview", label: "Overview", icon: Gauge },
+  { id: "Architecture", label: "Architecture", icon: Workflow },
+  { id: "Trace", label: "Request traces", icon: ArrowRight },
+  { id: "Pipeline", label: "Pipeline & gates", icon: Workflow },
   { id: "Archetypes", label: "Archetypes", icon: Boxes },
   { id: "Connectors", label: "Connectors & MCP", icon: Plug },
+  { id: "McpTools", label: "MCP inspector", icon: Plug },
+  { id: "DataModel", label: "Data model", icon: Table2 },
   { id: "Guardrails", label: "Guardrails", icon: ShieldCheck },
-  { id: "Pipeline", label: "Pipeline & gates", icon: Workflow },
   { id: "Health", label: "Health & drift", icon: Activity },
   { id: "Enablement", label: "Enablement", icon: Users },
   { id: "Evidence", label: "Evidence map", icon: Target },
@@ -142,6 +179,13 @@ export default function Home() {
         </header>
 
         {section === "Overview" && <Overview go={go} />}
+        {section === "Architecture" && (
+          <ArchitectureSection topology={gov.topology} />
+        )}
+        {section === "Trace" && (
+          <TraceSection topology={gov.topology} />
+        )}
+        {section === "Pipeline" && <PipelineSection />}
         {section === "Archetypes" && (
           <ArchetypesSection
             archetypes={gov.archetype_catalog.archetypes}
@@ -162,7 +206,16 @@ export default function Home() {
           />
         )}
         {section === "Guardrails" && <GuardrailsSection adversarial={gov.adversarial} />}
-        {section === "Pipeline" && <PipelineSection />}
+        {section === "McpTools" && (
+          <McpSection
+            tools={gov.topology.mcp_tools}
+            protocol={gov.topology.mcp_protocol}
+            connectors={gov.connector_catalog.connectors}
+          />
+        )}
+        {section === "DataModel" && (
+          <DataModelSection tables={gov.topology.tables} />
+        )}
         {section === "Health" && <HealthSection health={gov.health} />}
         {section === "Enablement" && <EnablementSection />}
         {section === "Evidence" && <EvidenceSection go={go} />}
@@ -797,6 +850,19 @@ function PipelineSection() {
             </div>
             <p>Automated checks catch mistakes that repeat. People catch the rest, so review is the point rather than a formality.</p>
           </div>
+          <PipelineFlow />
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Stage summary</p>
+              <h2>What each stage is for</h2>
+            </div>
+            <p>The same seven stages in prose. Select any stage in the diagram above for its gates and implementation file.</p>
+          </div>
           <ol className="steps">
             {stages.map((s) => (
               <li key={s.n}>
@@ -1355,6 +1421,351 @@ function DataSection() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ======================================================================== */
+/* Architecture                                                              */
+/* ======================================================================== */
+
+function ArchitectureSection({ topology }: { topology: Topology }) {
+  const byKind = useMemo(() => {
+    const counts: Record<string, number> = {};
+    topology.nodes.forEach((n) => {
+      counts[n.kind] = (counts[n.kind] ?? 0) + 1;
+    });
+    return counts;
+  }, [topology]);
+
+  return (
+    <>
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Platform architecture</p>
+              <h2>Every component, every connection, and who owns it</h2>
+            </div>
+            <p>
+              {topology.stats.nodes} nodes and {topology.stats.edges} connections, generated
+              from the files in this repository rather than drawn by hand.
+            </p>
+          </div>
+
+          <div className="grid g-4" style={{ marginBottom: 24 }}>
+            <div className="stat">
+              <div className="l">Components</div>
+              <div className="v">{topology.stats.nodes}</div>
+              <div className="s">
+                {byKind.person ?? 0} people · {byKind.registry ?? 0} registries ·{" "}
+                {byKind.process ?? 0} processes · {byKind.table ?? 0} data ·{" "}
+                {byKind.system ?? 0} systems
+              </div>
+            </div>
+            <div className="stat">
+              <div className="l">Connections</div>
+              <div className="v">{topology.stats.edges}</div>
+              <div className="s">Every one carries a payload and a named guard</div>
+            </div>
+            <div className="stat">
+              <div className="l">MCP tools</div>
+              <div className="v">{topology.stats.mcp_tools}</div>
+              <div className="s">Each bound to exactly one approved connector</div>
+            </div>
+            <div className="stat">
+              <div className="l">Gold tables</div>
+              <div className="v">{topology.stats.gold_tables}</div>
+              <div className="s">Four dimensions, five facts, declared grain on every one</div>
+            </div>
+          </div>
+
+          <ArchitectureGraph
+            nodes={topology.nodes as never}
+            edges={topology.edges as never}
+            layers={topology.layers as never}
+          />
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">How to read the diagram</p>
+              <h2>Six layers, and the rule that holds them together</h2>
+            </div>
+            <p>Reading order is top to bottom: the request enters at the top and the governed output leaves at the bottom.</p>
+          </div>
+          <div className="grid g-3">
+            {topology.layers.map((layer) => {
+              const members = topology.nodes.filter((n) => n.layer === layer.id);
+              if (members.length === 0) return null;
+              return (
+                <div className="card" key={layer.id}>
+                  <div className="row" style={{ marginBottom: 8 }}>
+                    <span className="pill accent">{String(layer.order + 1).padStart(2, "0")}</span>
+                    <h3 style={{ margin: 0 }}>{layer.label}</h3>
+                    <span className="muted" style={{ marginLeft: "auto", fontSize: 12 }}>
+                      {members.length} component{members.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  <p>{layer.description}</p>
+                  <div className="tag-row" style={{ marginTop: 12 }}>
+                    {members.map((m) => (
+                      <span className="pill" key={m.id}>{m.label}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="callout" style={{ marginTop: 18 }}>
+            <ShieldCheck size={17} />
+            <p>
+              <b>The rule that holds it together.</b> An archetype reaches a system only
+              through a connector that is in the catalog, and only by calling an MCP tool
+              that is bound to that connector. Every path from an agent to a guest is
+              therefore traceable, and every one of them passes a scope check and a
+              data-class check. The dashed red connections are the ones that are blocked
+              by design.
+            </p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ======================================================================== */
+/* Trace explorer                                                            */
+/* ======================================================================== */
+
+function TraceSection({ topology }: { topology: Topology }) {
+  return (
+    <>
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">End-to-end request traces</p>
+              <h2>Follow one request through the whole system</h2>
+            </div>
+            <p>
+              Each step names the actor, what moved, which guard checked it, and what the
+              outcome was. This is the answer to "how does everything connect".
+            </p>
+          </div>
+          <TraceExplorer nodes={topology.nodes as never} edges={topology.edges as never} />
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Connection inventory</p>
+              <h2>Every connection, and the guard that sits on it</h2>
+            </div>
+            <p>A connection without a guard is a place the platform can be bypassed.</p>
+          </div>
+          <div className="scroll">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>From</th><th>To</th><th>Relationship</th><th>Payload</th>
+                  <th>Guarded by</th><th>Kind</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topology.edges.map((e) => {
+                  const from = topology.nodes.find((n) => n.id === e.source);
+                  const to = topology.nodes.find((n) => n.id === e.target);
+                  return (
+                    <tr key={e.id}>
+                      <td><b>{from?.label ?? e.source}</b></td>
+                      <td><b>{to?.label ?? e.target}</b></td>
+                      <td>
+                        {e.label}
+                        <div className="muted" style={{ fontSize: 12, marginTop: 3 }}>{e.detail}</div>
+                      </td>
+                      <td className="mono" style={{ fontSize: 11.5 }}>{e.payload || "—"}</td>
+                      <td>
+                        {e.guarded_by ? (
+                          <span className="pill warn">{e.guarded_by}</span>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={`pill ${e.kind === "blocked" ? "bad" : "ok"}`}>
+                          {e.kind}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ======================================================================== */
+/* MCP section                                                              */
+/* ======================================================================== */
+
+function McpSection({
+  tools, protocol, connectors,
+}: {
+  tools: Topology["mcp_tools"];
+  protocol: Topology["mcp_protocol"];
+  connectors: Connector[];
+}) {
+  return (
+    <>
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Model Context Protocol</p>
+              <h2>The exact contract between an agent and a governed system</h2>
+            </div>
+            <p>
+              A dependency-free JSON-RPC server over stdio, built so it runs inside the
+              constrained runtime rather than beside it.
+            </p>
+          </div>
+          <McpInspector tools={tools as never} protocol={protocol as never} />
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Connector to tool binding</p>
+              <h2>Which archetype may call which tool</h2>
+            </div>
+            <p>Access is not implicit. The server checks the caller's archetype before it serves anything.</p>
+          </div>
+          <div className="scroll">
+            <table className="tbl">
+              <thead>
+                <tr><th>Connector</th><th>Data class</th><th>Tools bound to it</th><th>Permitted archetypes</th><th>Never exposes</th></tr>
+              </thead>
+              <tbody>
+                {connectors.map((c) => {
+                  const bound = tools.filter((t) => t.connector === c.id);
+                  return (
+                    <tr key={c.id}>
+                      <td><b>{c.title}</b><br /><span className="mono muted">{c.id}</span></td>
+                      <td><span className="pill">{c.data_class}</span></td>
+                      <td>
+                        {bound.length === 0 ? (
+                          <span className="muted">No tool bound</span>
+                        ) : (
+                          bound.map((t) => (
+                            <div key={t.name} className="mono" style={{ fontSize: 12, marginBottom: 3 }}>
+                              {t.name}
+                            </div>
+                          ))
+                        )}
+                      </td>
+                      <td>
+                        {c.allowed_archetypes.map((a) => (
+                          <span className="pill info" key={a} style={{ marginRight: 4 }}>{a}</span>
+                        ))}
+                      </td>
+                      <td>
+                        {c.never_exposes.map((f) => (
+                          <span className="pill bad" key={f} style={{ marginRight: 4 }}>{f}</span>
+                        ))}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ======================================================================== */
+/* Data model section                                                       */
+/* ======================================================================== */
+
+function DataModelSection({ tables }: { tables: Topology["tables"] }) {
+  return (
+    <>
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Data model</p>
+              <h2>Every table, its grain, and what it joins to</h2>
+            </div>
+            <p>
+              A fact table with an ambiguous grain cannot be aggregated safely. Declaring
+              the grain is what makes the numbers reconcilable.
+            </p>
+          </div>
+          <DataModelExplorer tables={tables as never} />
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="wrap">
+          <div className="block-head">
+            <div>
+              <p className="eyebrow">Medallion layers</p>
+              <h2>Bronze, Silver and Gold, and what each one is for</h2>
+            </div>
+            <p>The layers exist so that a bad row can be traced to the point where it entered the system.</p>
+          </div>
+          <div className="grid g-3">
+            <div className="card">
+              <div className="row" style={{ marginBottom: 8 }}>
+                <span className="pill" style={{ color: "#ff8f6b", borderColor: "rgba(255,143,107,0.35)" }}>Bronze</span>
+              </div>
+              <h3>The source-shaped extract</h3>
+              <p>
+                Kept exactly as it arrived, including the malformed rows. It is the
+                starting point a reviewer inspects when a number looks wrong, and it is
+                what makes a Silver rejection explainable.
+              </p>
+            </div>
+            <div className="card">
+              <div className="row" style={{ marginBottom: 8 }}>
+                <span className="pill" style={{ color: "#b18ce8", borderColor: "rgba(177,140,232,0.35)" }}>Silver</span>
+              </div>
+              <h3>The typed and validated layer</h3>
+              <p>
+                Dates parsed, numbers typed, referential integrity enforced, duplicates
+                removed. Every rejection is counted by reason, so a drop in row count is
+                explainable rather than mysterious.
+              </p>
+            </div>
+            <div className="card">
+              <div className="row" style={{ marginBottom: 8 }}>
+                <span className="pill" style={{ color: "#3ddc97", borderColor: "rgba(61,220,151,0.35)" }}>Gold</span>
+              </div>
+              <h3>The conformed dimensional model</h3>
+              <p>
+                Dimensions and facts with conformed keys and declared grain. This is the
+                only layer the archetypes, the connectors and the analyst read, which
+                means there is exactly one definition of every metric.
+              </p>
+            </div>
           </div>
         </div>
       </section>

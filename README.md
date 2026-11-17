@@ -16,14 +16,20 @@ them when they stop earning their place.
 
 ## Start here
 
-1. **Archetypes** — four real `SKILL.md` files, one retired and merged on usage evidence.
-2. **Connectors & MCP** — the governed connector catalog and a working MCP server.
-3. **Guardrails** — the deterministic engine, the 18-case adversarial suite, the secrets scan.
-4. **Pipeline & gates** — the seven-stage path to production, data classes, and triage.
-5. **Health & drift** — the weekly monitor that proposes keep, extend, merge, review, retire.
-6. **Enablement** — the readiness check, role paths, and office-hours formats.
-7. **Evidence map** — every responsibility in the role description, and what answers it.
-8. **Data & metrics** — the fixture, the metric catalog, and the executed quality checks.
+1. **Architecture** — an interactive diagram of every component and every connection.
+   Click any node to see what it is, which file implements it, and what flows through it.
+2. **Request traces** — follow one request end to end: who acts, what moves, which guard
+   checks it, and what the outcome was.
+3. **Pipeline & gates** — the seven-stage path to production, data classes, and triage.
+4. **Archetypes** — four real `SKILL.md` files, one retired and merged on usage evidence.
+5. **Connectors & MCP** — the governed connector catalog.
+6. **MCP inspector** — the exact tool contract: arguments, return payload, and guards.
+7. **Data model** — every table, its grain, its key, and what it joins to.
+8. **Guardrails** — the deterministic engine, the 18-case adversarial suite, the secrets scan.
+9. **Health & drift** — the weekly monitor that proposes keep, extend, merge, review, retire.
+10. **Enablement** — the readiness check, role paths, and office-hours formats.
+11. **Evidence map** — every responsibility in the role description, and what answers it.
+12. **Data & metrics** — the fixture, the metric catalog, and the executed quality checks.
 
 ---
 
@@ -40,8 +46,80 @@ Nothing in this repository is a mock. Every claim below is produced by a command
 | Catalog validator | `python3 -m monitoring.validate_catalog` | 4 archetypes, 3 declined, 0 errors |
 | Health monitor | `python3 -m monitoring.health_report` | flags prompt drift in `shift-handover` (+17.3%) |
 | MCP server | `python3 -m platform.mcp_server.server` | stdio JSON-RPC, refuses unauthorised connector use |
-| Test suite | `python3 -m pytest tests -q` | **44 tests pass** |
-| Portal | `npm run build` then `npm start` | production build, 26.1 kB route |
+| Topology generator | `python3 -m platform.topology.topology` | 30 nodes, 32 connections, 9 tables, 5 tools |
+| Test suite | `python3 -m pytest tests -q` | **61 tests pass** |
+| Portal | `npm run build` then `npm start` | production build, 44.5 kB route |
+
+---
+
+## Platform architecture
+
+The diagram in the portal is generated from the repository, not drawn by hand. The
+generator reads the archetype catalog, the connector catalog and the pipeline output,
+then emits a graph of **30 components and 32 connections** across six layers.
+
+| Layer | What lives there | Why it is separate |
+|---|---|---|
+| Experience | Builder, reviewer, app steward, data owner, security, guest | Every point where a person has to decide something |
+| Catalogs | Archetype, connector, policy and metric registries | An archetype cannot use what is not listed |
+| Runtime | Agent runtime, MCP server, scaffold generator, retrieval index | Where the work executes and what it may touch |
+| Control plane | Guardrail engine, adversarial suite, secrets scan, health monitor, catalog validator, human review, escalation triage | The checks that run on every change, and who owns them |
+| Data layer | Bronze, Silver, Gold, published snapshot | The modelled layer every metric is computed from |
+| Source systems | Venue incident log, governed analytics, consent-checked audience, campaign aggregates, venue directory | The systems archetypes are not allowed to touch directly |
+
+**Every connection carries a payload and a named guard.** A connection without a guard
+is a place the platform can be bypassed, so the generator refuses to emit one. The
+portal renders the full inventory, and the dashed red connections are the paths that
+are blocked by design.
+
+```bash
+python3 -m platform.topology.topology          # readable summary
+python3 -m platform.topology.topology --json   # the graph the portal renders
+```
+
+### The MCP contract
+
+The server implements the Model Context Protocol JSON-RPC surface over stdio by hand, so
+it has no third-party dependencies and can run inside a constrained runtime. It speaks
+`initialize`, `notifications/initialized`, `ping`, `tools/list` and `tools/call`.
+
+Five tools are exposed, each bound to exactly one approved connector:
+
+| Tool | Connector | Data class | What it returns |
+|---|---|---|---|
+| `list_venues` | `ops.readonly` | internal-personal | Venue identity, format, bay count |
+| `venue_performance` | `analytics.readonly` | internal-aggregated | Venue-day visits, revenue, check, incidents |
+| `list_incidents` | `ops.readonly` | internal-personal | Incident category, severity, resolution time |
+| `campaign_funnel` | `campaign.analytics` | internal-aggregated | Sends, opens, clicks, bookings, opt-outs, cost |
+| `consented_audience` | `marketing.readonly` | internal-personal | Consent-checked audience rows only |
+
+Three things make it governed rather than merely functional:
+
+1. **Access is not implicit.** A call naming an archetype that may not use the connector
+   is refused, with the permitted set in the error message.
+2. **`never_exposes` is enforced on every row**, not just documented.
+3. **There is no write path.** The server exposes reads only, so a compromised agent
+   cannot modify a record.
+
+### The data model
+
+Four dimensions and five facts, with declared grain on every table:
+
+| Table | Grain | Key |
+|---|---|---|
+| `dim_venue` | One row per venue | `venue_key` |
+| `dim_date` | One row per calendar day | `date_key` |
+| `dim_membership_tier` | One row per tier | `tier_key` |
+| `dim_guest` | One row per guest | `guest_key` |
+| `fact_visit` | One row per visit | `visit_key` |
+| `fact_membership` | One row per membership | `membership_key` |
+| `fact_campaign` | One row per campaign | `campaign_key` |
+| `fact_incident` | One row per incident | `incident_key` |
+| `fact_venue_day` | One row per venue per calendar day | `venue_key + date_key` |
+
+A fact table with an ambiguous grain cannot be aggregated safely, which is why the
+grain is declared in the model and checked in the pipeline rather than left to whoever
+writes the query.
 
 ---
 
@@ -281,6 +359,7 @@ python3 -m security.adversarial.run_suite               # adversarial suite
 python3 -m security.guardrails.secrets_scan             # secrets scan
 python3 -m monitoring.validate_catalog                   # catalog integrity
 python3 -m monitoring.health_report                     # health and drift
+python3 -m platform.topology.topology                   # architecture graph
 python3 -m rag.minimal_retrieval "how do I retire an archetype"
 ```
 
@@ -296,9 +375,11 @@ governed connector catalog; a working MCP stdio server with enforced connector
 governance and field redaction; a deterministic guardrail engine with scope, output and
 policy checks; an 18-case adversarial suite across six taxonomies; a secrets scanner; a
 health and drift monitor that reconciles proposals against recorded decisions; a review
-rubric and triage policy; a retrieval judgment document; a Next.js portal that renders
-only figures that passed their own checks; 44 tests; and a CI workflow that runs all of
-it on every pull request.
+rubric and triage policy; a retrieval judgment document; a platform topology generator
+that produces the 30-node architecture graph from the repository itself; a Next.js
+portal with an interactive architecture diagram, end-to-end request traces, an MCP tool
+inspector and a data-model explorer; 61 tests; and a CI workflow that runs all of it on
+every pull request.
 
 **Documented design, not deployed:** the constrained runtime, connector authentication
 and identity model, and the release mechanics are described rather than built. The review
@@ -318,16 +399,22 @@ no LLM-backed analyst.
 
 ## A five-minute walkthrough
 
-1. **Lead with the archetypes.** Open one `SKILL.md` and read the hard rules aloud.
-   That is the artefact the role is named after.
-2. **Show the catalog.** Four shipped, one retired and merged, three declined with a
-   route. The lifecycle is the argument.
-3. **Open the MCP server.** Call a tool as an archetype that is not permitted to use its
-   connector, and show the refusal.
-4. **Run the adversarial suite.** Show that a rule removal breaks the build.
-5. **Open the health report.** Show the drift flag and the reconciliation against the
+1. **Open the architecture diagram.** Click the MCP server node. Show that every
+   connection carries a payload and a named guard, and that the dashed red paths are
+   blocked by design. This is the fastest way to show the whole system.
+2. **Follow a request trace.** Walk the shift-handover trace hop by hop. Nine steps,
+   each with an actor, a payload, a guard and an outcome.
+3. **Open the MCP inspector.** Show the input schema, the return payload and the
+   guards applied to every call. Then run a call as an archetype that is not permitted
+   to use its connector, and show the refusal.
+4. **Lead with an archetype.** Open one `SKILL.md` and read the hard rules aloud. That is
+   the artefact the role is named after.
+5. **Show the catalog lifecycle.** Four shipped, one retired and merged, three declined
+   with a route.
+6. **Run the adversarial suite.** Show that removing a rule breaks the build.
+7. **Open the health report.** Show the drift flag and the reconciliation against the
    recorded steward decision.
-6. **Finish on the evidence map.** Nine responsibilities, and for each one: what is
+8. **Finish on the evidence map.** Nine responsibilities, and for each one: what is
    built, and where the honest limit is.
 
 Keep the synthetic-data notice visible. The project illustrates a working platform; it

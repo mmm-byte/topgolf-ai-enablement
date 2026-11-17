@@ -2134,6 +2134,862 @@
       "errors": [],
       "warnings": [],
       "valid": true
+    },
+    "topology": {
+      "layers": [
+        {
+          "id": "experience",
+          "label": "Experience",
+          "order": 0,
+          "description": "What a person actually touches."
+        },
+        {
+          "id": "catalog",
+          "label": "Catalogs",
+          "order": 1,
+          "description": "The governed registries. An archetype cannot use what is not listed."
+        },
+        {
+          "id": "runtime",
+          "label": "Runtime",
+          "order": 2,
+          "description": "Where the work executes and what it is allowed to touch."
+        },
+        {
+          "id": "control",
+          "label": "Control plane",
+          "order": 3,
+          "description": "The checks that run on every change, and the people who own them."
+        },
+        {
+          "id": "data",
+          "label": "Data layer",
+          "order": 4,
+          "description": "The modelled layer every metric is computed from."
+        },
+        {
+          "id": "source",
+          "label": "Source systems",
+          "order": 5,
+          "description": "The systems archetypes are not allowed to touch directly."
+        }
+      ],
+      "nodes": [
+        {
+          "id": "exp.builder",
+          "layer": "experience",
+          "label": "Builder",
+          "kind": "person",
+          "detail": "A non-technical or technical team member who needs a safe application. They answer the intake questionnaire, not a message to engineering.",
+          "source": "archetypes/references/intake-questionnaire.md",
+          "persona": "Requester"
+        },
+        {
+          "id": "exp.reviewer",
+          "layer": "experience",
+          "label": "Reviewer",
+          "kind": "person",
+          "detail": "The technical backstop. Reviews AI-produced code, specs and gate results for correctness, security, scope adherence and good development practice.",
+          "source": "review/ai-output-review-rubric.md",
+          "persona": "AI Enablement Engineer"
+        },
+        {
+          "id": "exp.steward",
+          "layer": "experience",
+          "label": "App steward",
+          "kind": "person",
+          "detail": "Owns an archetype after release. Signs every catalog change and reviews usage evidence.",
+          "source": "archetypes/catalog.yaml",
+          "persona": "Service owner"
+        },
+        {
+          "id": "exp.dataowner",
+          "layer": "experience",
+          "label": "Data owner",
+          "kind": "person",
+          "detail": "Owns a data set. Signs off the data class and confirms consent handling before anything reads it.",
+          "source": "review/gate-finding-triage.md",
+          "persona": "Data steward"
+        },
+        {
+          "id": "exp.security",
+          "layer": "experience",
+          "label": "Security",
+          "kind": "person",
+          "detail": "Receives every S1 finding. Anything involving guest safety, personal data exposure, or an automated safety decision routes here immediately.",
+          "source": "review/gate-finding-triage.md",
+          "persona": "Security"
+        },
+        {
+          "id": "exp.guest",
+          "layer": "experience",
+          "label": "Guest",
+          "kind": "person",
+          "detail": "The person the whole system exists for. A guest must never be surprised by something an archetype produced.",
+          "source": "archetypes/campaign-brief/SKILL.md",
+          "persona": "Recipient"
+        },
+        {
+          "id": "cat.archetypes",
+          "layer": "catalog",
+          "label": "Archetype catalog",
+          "kind": "registry",
+          "detail": "The machine-readable list of every archetype, with its data class, connector, owner, steward, usage evidence and recorded decision.",
+          "source": "archetypes/catalog.yaml",
+          "count": 4,
+          "declined": 3,
+          "version": "3.2.0"
+        },
+        {
+          "id": "cat.connectors",
+          "layer": "catalog",
+          "label": "Connector catalog",
+          "kind": "registry",
+          "detail": "The only route from an archetype to a system. Each connector declares what it may expose, what it must never expose, and which archetypes may use it.",
+          "source": "platform/connectors/catalog.yaml",
+          "count": 5,
+          "declined": 2,
+          "version": "2.4.0"
+        },
+        {
+          "id": "cat.policy",
+          "layer": "catalog",
+          "label": "Policy registry",
+          "kind": "registry",
+          "detail": "Data classes, escalation routes, and the rules for adding a connector or an archetype. All of it enforced somewhere in the pipeline.",
+          "source": "review/gate-finding-triage.md",
+          "count": 4,
+          "registry_unit": "data classes"
+        },
+        {
+          "id": "cat.metrics",
+          "layer": "catalog",
+          "label": "Metric catalog",
+          "kind": "registry",
+          "detail": "Every measure with its formula, grain, owner and limitation. A metric that will be quoted in a decision has to reconcile.",
+          "source": "scripts/build_pipeline.py",
+          "count": 6,
+          "registry_unit": "metrics"
+        },
+        {
+          "id": "rt.agent",
+          "layer": "runtime",
+          "label": "Agent runtime",
+          "kind": "process",
+          "detail": "Where an archetype executes. Constrained: it can only reach a system through a connector in the catalog, and only with the permissions the archetype declares.",
+          "source": "platform/connectors/catalog.yaml",
+          "constraint": "constrained-worker"
+        },
+        {
+          "id": "rt.mcp",
+          "layer": "runtime",
+          "label": "MCP server",
+          "kind": "process",
+          "detail": "The Model Context Protocol surface over stdio JSON-RPC. Implements initialize, tools/list and tools/call. No third-party dependencies so it runs inside the constrained runtime.",
+          "source": "platform/mcp_server/server.py",
+          "protocol": "2024-11-05",
+          "tools": 5
+        },
+        {
+          "id": "rt.guard",
+          "layer": "control",
+          "label": "Guardrail engine",
+          "kind": "process",
+          "detail": "Deterministic checks that fail closed. Scope: fields touched against fields declared. Output: structure, bounds and prohibited content. Policy: the output set against data-class rules.",
+          "source": "security/guardrails/guardrails.py",
+          "checks": 3
+        },
+        {
+          "id": "rt.adversarial",
+          "layer": "control",
+          "label": "Adversarial suite",
+          "kind": "process",
+          "detail": "Eighteen cases across six taxonomies. A case that stops being caught is a regression and blocks the pipeline.",
+          "source": "security/adversarial/run_suite.py",
+          "cases": 18,
+          "taxonomies": 6
+        },
+        {
+          "id": "rt.secrets",
+          "layer": "control",
+          "label": "Secrets scan",
+          "kind": "process",
+          "detail": "Credential patterns across the working tree, plus a git history scan in CI so a removed secret is still a finding.",
+          "source": "security/guardrails/secrets_scan.py"
+        },
+        {
+          "id": "rt.health",
+          "layer": "control",
+          "label": "Health monitor",
+          "kind": "process",
+          "detail": "Prompt drift, rewrite rate, gate failures and support load. Proposes keep, extend, merge, review or retire. The steward decides.",
+          "source": "monitoring/health_report.py"
+        },
+        {
+          "id": "rt.validator",
+          "layer": "control",
+          "label": "Catalog validator",
+          "kind": "process",
+          "detail": "Fails the build when an archetype is missing an owner, steward, data class, connector or review date.",
+          "source": "monitoring/validate_catalog.py"
+        },
+        {
+          "id": "rt.scaffold",
+          "layer": "runtime",
+          "label": "Scaffold generator",
+          "kind": "process",
+          "detail": "Turns a filled-in questionnaire into a complete, already-gated archetype folder. Refuses an unapproved connector.",
+          "source": "archetypes/shift-handover/scripts/scaffold.py"
+        },
+        {
+          "id": "rt.review",
+          "layer": "control",
+          "label": "Human review",
+          "kind": "process",
+          "detail": "Applies the rubric and answers one question: what did the automated gates miss? The stage exists because some rules cannot be automated honestly.",
+          "source": "review/ai-output-review-rubric.md"
+        },
+        {
+          "id": "rt.triage",
+          "layer": "control",
+          "label": "Escalation triage",
+          "kind": "process",
+          "detail": "Routes every finding to one of four destinations with a severity and a response clock.",
+          "source": "review/gate-finding-triage.md"
+        },
+        {
+          "id": "rt.rag",
+          "layer": "runtime",
+          "label": "Retrieval index",
+          "kind": "process",
+          "detail": "A bounded, owned, cited document corpus with a keyword index. Deliberately not a vector database: at this corpus size that adds a dependency and a failure mode without improving the answer.",
+          "source": "rag/minimal_retrieval.py",
+          "corpus": 15
+        },
+        {
+          "id": "data.bronze",
+          "layer": "data",
+          "label": "Bronze",
+          "kind": "table",
+          "detail": "Source-shaped extracts, kept so the starting point stays inspectable.",
+          "source": "data/bronze/",
+          "tables": 6
+        },
+        {
+          "id": "data.silver",
+          "layer": "data",
+          "label": "Silver",
+          "kind": "table",
+          "detail": "Typed, validated and deduplicated. Malformed rows are rejected and the reason is recorded rather than silently dropped.",
+          "source": "data/silver/",
+          "tables": 6
+        },
+        {
+          "id": "data.gold",
+          "layer": "data",
+          "label": "Gold",
+          "kind": "table",
+          "detail": "Conformed dimensions and facts. Every fact resolves to a dimension. This is the layer the archetypes and the analyst read.",
+          "source": "data/gold/",
+          "tables": 9
+        },
+        {
+          "id": "data.snapshot",
+          "layer": "data",
+          "label": "Published snapshot",
+          "kind": "table",
+          "detail": "The single JSON the portal renders. The pipeline cannot write a figure the quality checks did not pass, and the portal cannot show a number that failed its own check.",
+          "source": "public/data/operations.json",
+          "tables": 1
+        },
+        {
+          "id": "src.ops.readonly",
+          "layer": "source",
+          "label": "Venue incident and shift log",
+          "kind": "system",
+          "detail": "Nightly sync into the constrained runtime. No live write path exists, so a compromised agent cannot modify an incident record.",
+          "source": "platform/connectors/catalog.yaml",
+          "data_class": "internal-personal",
+          "steward": "Venue Ops Tech Lead",
+          "connector_id": "ops.readonly"
+        },
+        {
+          "id": "src.analytics.readonly",
+          "layer": "source",
+          "label": "Gold metric layer",
+          "kind": "system",
+          "detail": "Aggregates only. Individual guest keys are available to the frequency archetype through the scoped, consent-checked path in its own connector entry.",
+          "source": "platform/connectors/catalog.yaml",
+          "data_class": "internal-aggregated",
+          "steward": "Data Platform Owner",
+          "connector_id": "analytics.readonly"
+        },
+        {
+          "id": "src.marketing.readonly",
+          "layer": "source",
+          "label": "Consent-checked audience service",
+          "kind": "system",
+          "detail": "The service itself refuses to return a row where consented_email is not yes or the age band is 13-17. The policy check in the guardrail engine is a second, independent barrier, not the only one.",
+          "source": "platform/connectors/catalog.yaml",
+          "data_class": "internal-personal",
+          "steward": "Marketing Platform Owner",
+          "connector_id": "marketing.readonly"
+        },
+        {
+          "id": "src.campaign.analytics",
+          "layer": "source",
+          "label": "Campaign funnel aggregates",
+          "kind": "system",
+          "detail": "Aggregates only. No recipient-level record is exposed, so campaign performance cannot become a re-identification path.",
+          "source": "platform/connectors/catalog.yaml",
+          "data_class": "internal-aggregated",
+          "steward": "Marketing Platform Owner",
+          "connector_id": "campaign.analytics"
+        },
+        {
+          "id": "src.venue.directory",
+          "layer": "source",
+          "label": "Published venue and offer pages",
+          "kind": "system",
+          "detail": "The only connector usable from an external tool, and it carries no operational data.",
+          "source": "platform/connectors/catalog.yaml",
+          "data_class": "public",
+          "steward": "Marketing Platform Owner",
+          "connector_id": "venue.directory"
+        }
+      ],
+      "edges": [
+        {
+          "id": "exp.builder->cat.archetypes",
+          "source": "exp.builder",
+          "target": "cat.archetypes",
+          "label": "submits intake",
+          "kind": "flow",
+          "detail": "Answers the intake questionnaire. The request is matched to an existing archetype or sent for a new one.",
+          "payload": "intake answers",
+          "guarded_by": "cat.policy"
+        },
+        {
+          "id": "exp.builder->rt.scaffold",
+          "source": "exp.builder",
+          "target": "rt.scaffold",
+          "label": "runs scaffold",
+          "kind": "flow",
+          "detail": "Generates a complete archetype folder with the rules and the manifest already wired in.",
+          "payload": "archetype scaffold",
+          "guarded_by": "rt.validator"
+        },
+        {
+          "id": "rt.scaffold->cat.archetypes",
+          "source": "rt.scaffold",
+          "target": "cat.archetypes",
+          "label": "registers",
+          "kind": "flow",
+          "detail": "The new archetype enters the catalog as draft. It cannot be used against real data until the intake questions are answered.",
+          "payload": "catalog entry",
+          "guarded_by": ""
+        },
+        {
+          "id": "cat.archetypes->rt.agent",
+          "source": "cat.archetypes",
+          "target": "rt.agent",
+          "label": "loads",
+          "kind": "flow",
+          "detail": "The runtime loads the archetype's instructions, its data class, its connector binding and its guardrail manifest.",
+          "payload": "SKILL.md + guardrails.json",
+          "guarded_by": "rt.validator"
+        },
+        {
+          "id": "cat.archetypes->rt.health",
+          "source": "cat.archetypes",
+          "target": "rt.health",
+          "label": "is measured by",
+          "kind": "flow",
+          "detail": "Usage, rewrite rate, gate failures, support load and prompt size are measured per archetype.",
+          "payload": "usage and drift signals",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.health->exp.steward",
+          "source": "rt.health",
+          "target": "exp.steward",
+          "label": "proposes to",
+          "kind": "flow",
+          "detail": "The monitor proposes keep, extend, merge, review or retire. It does not apply the change.",
+          "payload": "recommended action",
+          "guarded_by": ""
+        },
+        {
+          "id": "exp.steward->cat.archetypes",
+          "source": "exp.steward",
+          "target": "cat.archetypes",
+          "label": "records decision",
+          "kind": "flow",
+          "detail": "The decision and its reason are written into the catalog, with the person who accepted it and the date it is due again.",
+          "payload": "catalog decision",
+          "guarded_by": ""
+        },
+        {
+          "id": "cat.connectors->rt.mcp",
+          "source": "cat.connectors",
+          "target": "rt.mcp",
+          "label": "binds tools to",
+          "kind": "flow",
+          "detail": "Each MCP tool is bound to exactly one connector. Access is not implicit.",
+          "payload": "tool to connector binding",
+          "guarded_by": "rt.mcp"
+        },
+        {
+          "id": "rt.agent->rt.mcp",
+          "source": "rt.agent",
+          "target": "rt.mcp",
+          "label": "calls tools on",
+          "kind": "flow",
+          "detail": "The agent calls the MCP server over stdio JSON-RPC. The server enforces which archetype may use which connector.",
+          "payload": "tools/call",
+          "guarded_by": "rt.mcp"
+        },
+        {
+          "id": "rt.mcp->data.gold",
+          "source": "rt.mcp",
+          "target": "data.gold",
+          "label": "reads",
+          "kind": "flow",
+          "detail": "The server reads the Gold layer. It exposes no write path at all, so a compromised agent cannot modify a record.",
+          "payload": "read-only query",
+          "guarded_by": "rt.guard"
+        },
+        {
+          "id": "rt.mcp->src.ops.readonly",
+          "source": "rt.mcp",
+          "target": "src.ops.readonly",
+          "label": "would reach",
+          "kind": "blocked",
+          "detail": "In production this connector reads the venue incident system. In this repository the Gold layer stands in for it.",
+          "payload": "never_exposes enforced",
+          "guarded_by": "rt.guard"
+        },
+        {
+          "id": "rt.mcp->src.analytics.readonly",
+          "source": "rt.mcp",
+          "target": "src.analytics.readonly",
+          "label": "would reach",
+          "kind": "blocked",
+          "detail": "Aggregates only. Individual guest keys are not exposed through this path.",
+          "payload": "never_exposes enforced",
+          "guarded_by": "rt.guard"
+        },
+        {
+          "id": "rt.mcp->src.marketing.readonly",
+          "source": "rt.mcp",
+          "target": "src.marketing.readonly",
+          "label": "would reach",
+          "kind": "blocked",
+          "detail": "Consent-checked. The connector itself refuses to return a non-consented or minor guest, independently of the archetype.",
+          "payload": "consent gate",
+          "guarded_by": "rt.guard"
+        },
+        {
+          "id": "rt.mcp->src.campaign.analytics",
+          "source": "rt.mcp",
+          "target": "src.campaign.analytics",
+          "label": "would reach",
+          "kind": "blocked",
+          "detail": "Campaign aggregates only. No recipient-level record, so it cannot become a re-identification path.",
+          "payload": "never_exposes enforced",
+          "guarded_by": "rt.guard"
+        },
+        {
+          "id": "rt.mcp->src.venue.directory",
+          "source": "rt.mcp",
+          "target": "src.venue.directory",
+          "label": "would reach",
+          "kind": "blocked",
+          "detail": "The only connector usable from an external tool, and it carries no operational data.",
+          "payload": "public class",
+          "guarded_by": "rt.guard"
+        },
+        {
+          "id": "data.bronze->data.silver",
+          "source": "data.bronze",
+          "target": "data.silver",
+          "label": "transforms into",
+          "kind": "flow",
+          "detail": "Types, validates and deduplicates. Rejections are counted by reason.",
+          "payload": "validated records",
+          "guarded_by": "rt.validator"
+        },
+        {
+          "id": "data.silver->data.gold",
+          "source": "data.silver",
+          "target": "data.gold",
+          "label": "conforms into",
+          "kind": "flow",
+          "detail": "Dimensions and facts with conformed keys and declared grain.",
+          "payload": "dimensional records",
+          "guarded_by": "rt.validator"
+        },
+        {
+          "id": "data.gold->data.snapshot",
+          "source": "data.gold",
+          "target": "data.snapshot",
+          "label": "publishes",
+          "kind": "flow",
+          "detail": "The snapshot the portal reads. Every figure in it passed a quality check.",
+          "payload": "gated snapshot",
+          "guarded_by": "rt.validator"
+        },
+        {
+          "id": "data.snapshot->cat.metrics",
+          "source": "data.snapshot",
+          "target": "cat.metrics",
+          "label": "documents",
+          "kind": "flow",
+          "detail": "Every published measure carries its formula, grain, owner and limitation.",
+          "payload": "metric definitions",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.guard->rt.review",
+          "source": "rt.guard",
+          "target": "rt.review",
+          "label": "hands off to",
+          "kind": "flow",
+          "detail": "The engine produces findings. The reviewer produces judgment about what the gates missed.",
+          "payload": "findings",
+          "guarded_by": "rt.review"
+        },
+        {
+          "id": "rt.review->exp.reviewer",
+          "source": "rt.review",
+          "target": "exp.reviewer",
+          "label": "performed by",
+          "kind": "flow",
+          "detail": "A person applies the rubric and records what they tried.",
+          "payload": "review record",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.adversarial->rt.review",
+          "source": "rt.adversarial",
+          "target": "rt.review",
+          "label": "informs",
+          "kind": "flow",
+          "detail": "Adversarial results show which attacks are caught and which rules still need a human.",
+          "payload": "attack coverage",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.secrets->rt.review",
+          "source": "rt.secrets",
+          "target": "rt.review",
+          "label": "supplies evidence to",
+          "kind": "flow",
+          "detail": "A clean scan is one gate result the reviewer interprets.",
+          "payload": "gate evidence",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.review->rt.triage",
+          "source": "rt.review",
+          "target": "rt.triage",
+          "label": "routes findings to",
+          "kind": "flow",
+          "detail": "Every finding gets a severity, a destination and a response clock.",
+          "payload": "finding",
+          "guarded_by": "rt.triage"
+        },
+        {
+          "id": "rt.triage->exp.security",
+          "source": "rt.triage",
+          "target": "exp.security",
+          "label": "pages",
+          "kind": "flow",
+          "detail": "Guest safety, data exposure, or an automated safety decision. Immediate.",
+          "payload": "S1 finding",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.triage->exp.dataowner",
+          "source": "rt.triage",
+          "target": "exp.dataowner",
+          "label": "routes to",
+          "kind": "flow",
+          "detail": "Wrong data class, missing consent, minor targeting, unclear source.",
+          "payload": "S1 or S2 finding",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.triage->exp.steward",
+          "source": "rt.triage",
+          "target": "exp.steward",
+          "label": "routes to",
+          "kind": "flow",
+          "detail": "Scope, correctness, contract breach, gate failure.",
+          "payload": "S2 or S3 finding",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.triage->exp.reviewer",
+          "source": "rt.triage",
+          "target": "exp.reviewer",
+          "label": "routes ambiguous to",
+          "kind": "flow",
+          "detail": "A finding that could reasonably go two places goes to AI Enablement first, because routing wrongly costs a day.",
+          "payload": "ambiguous finding",
+          "guarded_by": ""
+        },
+        {
+          "id": "exp.security->cat.policy",
+          "source": "exp.security",
+          "target": "cat.policy",
+          "label": "may change",
+          "kind": "flow",
+          "detail": "A finding routed to security can change the policy registry, which changes what the gates enforce.",
+          "payload": "policy change",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.rag->cat.archetypes",
+          "source": "rt.rag",
+          "target": "cat.archetypes",
+          "label": "indexes",
+          "kind": "flow",
+          "detail": "The retrieval corpus is the archetype catalog, the policy documents and the review guidance, so a builder can find the right building block.",
+          "payload": "cited passages",
+          "guarded_by": ""
+        },
+        {
+          "id": "rt.rag->exp.builder",
+          "source": "rt.rag",
+          "target": "exp.builder",
+          "label": "answers",
+          "kind": "flow",
+          "detail": "Answers carry the source passage, so the builder can cite it. If no passage supports the answer, it is withheld.",
+          "payload": "cited answer",
+          "guarded_by": ""
+        },
+        {
+          "id": "exp.guest->rt.mcp",
+          "source": "exp.guest",
+          "target": "rt.mcp",
+          "label": "is affected by",
+          "kind": "flow",
+          "detail": "The ultimate output. Every rule exists so a guest is never surprised by something an archetype produced.",
+          "payload": "guest-facing output",
+          "guarded_by": ""
+        }
+      ],
+      "tables": [
+        {
+          "name": "dim_venue",
+          "layer": "Gold",
+          "grain": "One row per venue",
+          "purpose": "Venue identity, format, bay count, opening date.",
+          "key": "venue_key",
+          "rows": 64,
+          "joins": [
+            "fact_visit",
+            "fact_venue_day",
+            "fact_incident",
+            "fact_membership"
+          ]
+        },
+        {
+          "name": "dim_date",
+          "layer": "Gold",
+          "grain": "One row per calendar day",
+          "purpose": "Conformed date spine with weekend and month attributes.",
+          "key": "date_key",
+          "rows": 331,
+          "joins": [
+            "fact_visit",
+            "fact_campaign",
+            "fact_incident",
+            "fact_venue_day"
+          ]
+        },
+        {
+          "name": "dim_membership_tier",
+          "layer": "Gold",
+          "grain": "One row per tier",
+          "purpose": "The three planned tiers with fee and rank.",
+          "key": "tier_key",
+          "rows": 3,
+          "joins": [
+            "fact_membership"
+          ]
+        },
+        {
+          "name": "dim_guest",
+          "layer": "Gold",
+          "grain": "One row per guest",
+          "purpose": "Consent state, age band, signup channel, lifetime visits.",
+          "key": "guest_key",
+          "rows": 4200,
+          "joins": [
+            "fact_visit",
+            "fact_membership"
+          ]
+        },
+        {
+          "name": "fact_visit",
+          "layer": "Gold",
+          "grain": "One row per visit",
+          "purpose": "Party size, modelled check total, games played, booking channel.",
+          "key": "visit_key",
+          "rows": 48000,
+          "joins": [
+            "dim_venue",
+            "dim_guest",
+            "dim_date"
+          ]
+        },
+        {
+          "name": "fact_membership",
+          "layer": "Gold",
+          "grain": "One row per membership",
+          "purpose": "Tier, status, start date, monthly fee, days active.",
+          "key": "membership_key",
+          "rows": 2600,
+          "joins": [
+            "dim_guest",
+            "dim_membership_tier",
+            "dim_date"
+          ]
+        },
+        {
+          "name": "fact_campaign",
+          "layer": "Gold",
+          "grain": "One row per campaign",
+          "purpose": "Sends, opens, clicks, bookings, opt-outs and cost.",
+          "key": "campaign_key",
+          "rows": 900,
+          "joins": [
+            "dim_date"
+          ]
+        },
+        {
+          "name": "fact_incident",
+          "layer": "Gold",
+          "grain": "One row per incident",
+          "purpose": "Category, severity, resolution time, escalation flag.",
+          "key": "incident_key",
+          "rows": 1400,
+          "joins": [
+            "dim_venue",
+            "dim_date"
+          ]
+        },
+        {
+          "name": "fact_venue_day",
+          "layer": "Gold",
+          "grain": "One row per venue per calendar day",
+          "purpose": "The daily spine that venue comparisons and trend measures use.",
+          "key": "venue_key + date_key",
+          "rows": 19110,
+          "joins": [
+            "dim_venue",
+            "dim_date"
+          ]
+        }
+      ],
+      "mcp_tools": [
+        {
+          "name": "list_venues",
+          "connector": "ops.readonly",
+          "data_class": "internal-personal",
+          "description": "List venues with format, location and bay count.",
+          "arguments": {
+            "venue_format": "string, one of flagship | standard | urban",
+            "city": "string, partial match"
+          },
+          "returns": "venue_key, venue_name, city, state, venue_format, bay_count, opened_date",
+          "guards": [
+            "connector permission",
+            "never_exposes redaction"
+          ]
+        },
+        {
+          "name": "venue_performance",
+          "connector": "analytics.readonly",
+          "data_class": "internal-aggregated",
+          "description": "Venue-day visits, revenue, average check and incidents.",
+          "arguments": {
+            "venue_key": "integer, optional filter",
+            "month": "string, YYYY-MM"
+          },
+          "returns": "venue_key, date, visits, revenue, avg_check, incidents",
+          "guards": [
+            "connector permission",
+            "never_exposes redaction"
+          ]
+        },
+        {
+          "name": "list_incidents",
+          "connector": "ops.readonly",
+          "data_class": "internal-personal",
+          "description": "Venue incidents with category, severity and resolution time.",
+          "arguments": {
+            "venue_key": "integer, optional filter",
+            "severity": "string, one of low | medium | high"
+          },
+          "returns": "incident_id, venue_key, category, severity, resolution_minutes, escalated",
+          "guards": [
+            "connector permission",
+            "never_exposes redaction",
+            "no guest identifier in any row"
+          ]
+        },
+        {
+          "name": "campaign_funnel",
+          "connector": "campaign.analytics",
+          "data_class": "internal-aggregated",
+          "description": "Campaign sends, opens, clicks, bookings, opt-outs and cost.",
+          "arguments": {
+            "channel": "string, optional filter"
+          },
+          "returns": "campaign_id, channel, audience_segment, sends, opens, clicks, bookings, opt_outs, cost_total, cost_per_booking",
+          "guards": [
+            "connector permission",
+            "no recipient-level record exposed"
+          ]
+        },
+        {
+          "name": "consented_audience",
+          "connector": "marketing.readonly",
+          "data_class": "internal-personal",
+          "description": "Consent-checked audience rows. Excludes non-consented and minor guests.",
+          "arguments": {
+            "audience_segment": "string, optional tier filter"
+          },
+          "returns": "guest_key, age_band, audience_segment, tier_name",
+          "guards": [
+            "connector permission",
+            "consent gate",
+            "minor exclusion",
+            "no contact details"
+          ]
+        }
+      ],
+      "mcp_protocol": {
+        "protocol_version": "2024-11-05",
+        "transport": "stdio, newline-delimited JSON-RPC 2.0",
+        "methods": [
+          "initialize",
+          "notifications/initialized",
+          "ping",
+          "tools/list",
+          "tools/call"
+        ],
+        "server": "platform/mcp_server/server.py"
+      },
+      "stats": {
+        "nodes": 30,
+        "edges": 32,
+        "gold_tables": 9,
+        "mcp_tools": 5
+      }
     }
   }
 }
