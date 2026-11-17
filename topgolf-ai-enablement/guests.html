@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guest Frequency Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span><span><b>Guest and Team AI</b><span>Enablement concept</span></span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Overview</a>
+      <a href="marketing.html">Marketing</a>
+      <a href="guests.html" aria-current="page">Guest frequency</a>
+      <a href="team.html">Team enablement</a>
+      <a href="pipeline.html">Pipeline and governance</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <header class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Module 2 · Guest frequency</p>
+      <h1>Guest frequency lab</h1>
+      <p class="lede">The public goal is more visits from the same guests, and the membership tiers are the planned way to get there. This lab shows the trade-off that matters: how much contact helps, and where it starts to push guests away. Every assumption is a slider you can change.</p>
+    </div>
+  </header>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Contact frequency</p><h2>Where more messages stop helping</h2></div><p>The model is deliberately simple, so the shape of the trade-off is easy to see and challenge. It is not a forecast.</p></div>
+      <div class="split">
+        <div class="card" style="display:grid;gap:14px">
+          <div class="field"><label for="cap">Weekly cap per guest</label><input id="cap" type="range" min="1" max="3" step="1" value="2"><span class="hint" id="cap-h"></span></div>
+          <div class="field"><label for="members">Members in the group</label><input id="members" type="range" min="10000" max="200000" step="5000" value="80000"><span class="hint" id="members-h"></span></div>
+          <div class="field"><label for="base">Visits per member per month, with no contact</label><input id="base" type="range" min="0.5" max="6" step="0.1" value="2.0"><span class="hint" id="base-h"></span></div>
+          <div class="field"><label for="lift">Strongest possible lift from contact</label><input id="lift" type="range" min="5" max="40" step="1" value="18"><span class="hint" id="lift-h"></span></div>
+          <div class="field"><label for="pen">Visit loss per message above the cap</label><input id="pen" type="range" min="0" max="30" step="1" value="10"><span class="hint" id="pen-h"></span></div>
+          <p class="hint" style="font-size:12.5px">Model: visits = base × (1 + lift × (1 − e<sup>−0.9c</sup>) − penalty × max(0, c − cap)). Opt-outs = members × (0.002c + 0.01 × max(0, c − cap)). c is messages per guest per week.</p>
+        </div>
+        <div style="display:grid;gap:16px;min-width:0">
+          <div class="grid g-3" id="kpis"></div>
+          <div class="card">
+            <h3>Visits and opt-outs by weekly contact</h3>
+            <p class="muted" style="font-size:13px;margin-top:4px">The dashed line marks the cap. The gold point is the best net visits for the current assumptions.</p>
+            <svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Chart of expected visits and opt-outs against weekly contact frequency" style="width:100%;height:auto;margin-top:12px;display:block"></svg>
+            <div class="scroll" style="margin-top:10px">
+              <table class="tbl"><thead><tr><th>Messages a week</th><th class="num">Visits per member</th><th class="num">Opt-outs per 1,000 members</th><th>Read</th></tr></thead><tbody id="rows"></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Membership tiers</p><h2>Do the planned tiers pay for themselves?</h2></div><p>Compares each tier with the same guest paying per visit. Positive means the membership brings in more revenue than pay-per-visit would. Negative means the tier gives up revenue, which is cannibalization, and it shows up early.</p></div>
+      <div class="split">
+        <div class="card" style="display:grid;gap:12px">
+          <div class="field"><label for="ppv">Pay-per-visit price (USD)</label><input id="ppv" type="range" min="25" max="60" step="1" value="38"><span class="hint" id="ppv-h"></span></div>
+          <div class="field"><label for="over">Overage price per extra visit as a share of pay-per-visit</label><input id="over" type="range" min="50" max="100" step="5" value="80"><span class="hint" id="over-h"></span></div>
+          <p class="hint" style="font-size:12.5px">Tier values are illustrative. Real prices and credits are not public.</p>
+        </div>
+        <div class="card scroll">
+          <table class="tbl">
+            <thead><tr><th>Tier</th><th class="num">Fee / mo</th><th class="num">Credits</th><th class="num">Share of members</th><th class="num">Visits / mo</th><th class="num">Revenue vs pay-per-visit</th></tr></thead>
+            <tbody id="tiers"></tbody>
+          </table>
+          <p class="muted" style="font-size:12.5px;margin-top:12px">Visits per month is a usage input. Change it per tier to test what happens if avid members play more.</p>
+          <div class="grid g-3" style="margin-top:12px;gap:10px" id="tier-usage"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Lapse and second-visit triggers</p><h2>When to send something, and when to send a person</h2></div><p>Each trigger has a cap, so no guest receives the same trigger twice in a month.</p></div>
+      <div class="grid g-2">
+        <div class="card"><div class="row" style="justify-content:space-between"><h3>Second-visit nudge</h3><span class="pill ok">Automated</span></div><p style="margin-top:8px">First visit in the last 14 days, no return yet. Send one offer for a weekday visit. Stop after two sends.</p><div class="foot">Cap: 1 per 30 days · Cost to guest: none · Goal: second visit within 21 days</div></div>
+        <div class="card"><div class="row" style="justify-content:space-between"><h3>Win-back offer</h3><span class="pill ok">Automated</span></div><p style="margin-top:8px">No visit in 60 to 90 days, and the guest has not opted out. Offer a credit for a visit in the next two weeks. Do not send if the guest visited in the last 30 days.</p><div class="foot">Cap: 1 per 30 days · Goal: visit within 14 days</div></div>
+        <div class="card"><div class="row" style="justify-content:space-between"><h3>Avid member drop-off</h3><span class="pill warn">Human-led</span></div><p style="margin-top:8px">Visits fell by 40% or more month over month for an avid member. A venue team member sends a personal note or invites them to a clinic. No automated offer.</p><div class="foot">Owner: venue guest team · Logged for review</div></div>
+        <div class="card"><div class="row" style="justify-content:space-between"><h3>Family visit reminder</h3><span class="pill warn">Extra review</span></div><p style="margin-top:8px">Reminder for a group booking the guest has made before. Goes through the youth review group because family groups can include minors.</p><div class="foot">Owner: marketing · Review: youth group</div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>An unofficial concept built for a job application. Not affiliated with, endorsed by or connected to Topgolf or Callaway Brands. The model, the tiers and the trigger rules are illustrative assumptions, not company data.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n, d) { return Number(n).toLocaleString('en-US', { maximumFractionDigits: d == null ? 0 : d, minimumFractionDigits: d == null ? 0 : d }); };
+  var money = function (n) { return '$' + fmt(Math.round(n)); };
+
+  function read(id) { return Number($(id).value); }
+
+  function visits(c, s) {
+    var over = Math.max(0, c - s.cap);
+    return s.base * (1 + (s.lift / 100) * (1 - Math.exp(-0.9 * c)) - (s.pen / 100) * over);
+  }
+  function optouts(c, s) {
+    var over = Math.max(0, c - s.cap);
+    return 1000 * (0.002 * c + 0.01 * over);
+  }
+
+  function settings() {
+    return { cap: read('cap'), members: read('members'), base: read('base'), lift: read('lift'), pen: read('pen') };
+  }
+
+  function readFor(c, s) {
+    var v = visits(c, s), o = optouts(c, s);
+    return { c: c, v: v, o: o };
+  }
+
+  function render() {
+    var s = settings();
+    $('cap-h').textContent = 'Currently ' + s.cap + ' message' + (s.cap === 1 ? '' : 's') + ' a week per guest.';
+    $('members-h').textContent = fmt(s.members) + ' members in this group (synthetic).';
+    $('base-h').textContent = fmt(s.base, 1) + ' visits a month with no contact.';
+    $('lift-h').textContent = 'Up to ' + s.lift + '% more visits from contact.';
+    $('pen-h').textContent = s.pen + '% fewer visits for each message above the cap.';
+
+    var pts = [];
+    for (var c = 0; c <= 4; c++) pts.push(readFor(c, s));
+    var best = pts.reduce(function (a, b) { return b.v > a.v ? b : a; }, pts[0]);
+    var atCap = readFor(s.cap, s);
+    var over = readFor(Math.min(4, s.cap + 2), s);
+
+    $('kpis').innerHTML =
+      '<div class="stat"><div class="l">Visits at the cap</div><div class="v">' + fmt(atCap.v, 2) + '</div><div class="s">Per member per month, ' + s.cap + ' messages a week</div></div>' +
+      '<div class="stat"><div class="l">Best frequency found</div><div class="v">' + best.c + ' a week</div><div class="s">' + fmt(best.v, 2) + ' visits per member</div></div>' +
+      '<div class="stat"><div class="l">Opt-outs at 2 over the cap</div><div class="v">' + fmt(over.o, 1) + '</div><div class="s">Per 1,000 members a month, versus ' + fmt(atCap.o, 1) + ' at the cap</div></div>';
+
+    $('rows').innerHTML = pts.map(function (p) {
+      var note = p.c > s.cap ? 'Over the cap. Net visits fall.' : p.c === best.c ? 'Best net visits.' : 'Within the cap.';
+      var cls = p.c > s.cap ? 'bad' : p.c === best.c ? 'ok' : '';
+      return '<tr><td>' + p.c + '</td><td class="num">' + fmt(p.v, 2) + '</td><td class="num">' + fmt(p.o, 1) + '</td><td><span class="pill ' + cls + '">' + note + '</span></td></tr>';
+    }).join('');
+
+    drawChart(pts, s, best);
+  }
+
+  function drawChart(pts, s, best) {
+    var W = 640, H = 300, m = { l: 56, r: 56, t: 20, b: 36 };
+    var xs = function (c) { return m.l + (W - m.l - m.r) * c / 4; };
+    var vMin = Math.min.apply(null, pts.map(function (p) { return p.v; })) * 0.95;
+    var vMax = Math.max.apply(null, pts.map(function (p) { return p.v; })) * 1.05;
+    var oMax = Math.max(1, Math.max.apply(null, pts.map(function (p) { return p.o; })) * 1.2);
+    var yv = function (v) { return m.t + (H - m.t - m.b) * (1 - (v - vMin) / (vMax - vMin)); };
+    var yo = function (o) { return m.t + (H - m.t - m.b) * (1 - o / oMax); };
+    var out = '';
+    for (var i = 0; i <= 4; i++) {
+      out += '<text x="' + xs(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="12" fill="var(--muted)">' + i + '</text>';
+    }
+    out += '<text x="' + (W / 2) + '" y="' + (H - 0) + '" text-anchor="middle" font-size="11" fill="var(--muted)">Messages per guest per week</text>';
+    var capX = xs(s.cap);
+    out += '<line x1="' + capX + '" x2="' + capX + '" y1="' + m.t + '" y2="' + (H - m.b) + '" stroke="var(--muted)" stroke-dasharray="4 4"/>';
+    out += '<text x="' + (capX + 6) + '" y="' + (m.t + 12) + '" font-size="11" fill="var(--muted)">cap</text>';
+    var vPath = pts.map(function (p, i) { return (i ? 'L' : 'M') + xs(p.c).toFixed(1) + ' ' + yv(p.v).toFixed(1); }).join(' ');
+    var oPath = pts.map(function (p, i) { return (i ? 'L' : 'M') + xs(p.c).toFixed(1) + ' ' + yo(p.o).toFixed(1); }).join(' ');
+    out += '<path d="' + oPath + '" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-linejoin="round"/>';
+    out += '<path d="' + vPath + '" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>';
+    pts.forEach(function (p) {
+      out += '<circle cx="' + xs(p.c) + '" cy="' + yv(p.v) + '" r="4" fill="var(--accent)"/>';
+      out += '<circle cx="' + xs(p.c) + '" cy="' + yo(p.o) + '" r="3.5" fill="var(--bad)"/>';
+    });
+    out += '<circle cx="' + xs(best.c) + '" cy="' + yv(best.v) + '" r="8" fill="var(--gold)" stroke="var(--surface)" stroke-width="2"/>';
+    out += '<text x="' + (m.l - 8) + '" y="' + (m.t + 4) + '" text-anchor="end" font-size="11" fill="var(--accent)">visits</text>';
+    out += '<text x="' + (W - m.r + 8) + '" y="' + (m.t + 4) + '" font-size="11" fill="var(--bad)">opt-outs</text>';
+    $('chart').innerHTML = out;
+  }
+
+  var TIERS = [
+    { name: 'Social', fee: 15, credits: 1, share: 0.55, usage: 1.4 },
+    { name: 'Plus', fee: 39, credits: 3, share: 0.33, usage: 3.2 },
+    { name: 'Avid', fee: 79, credits: 6, share: 0.12, usage: 6.8 }
+  ];
+
+  function renderTiers() {
+    var ppv = read('ppv'), overPct = read('over') / 100;
+    $('ppv-h').textContent = '$' + ppv + ' per visit without a membership.';
+    $('over-h').textContent = Math.round(overPct * 100) + '% of pay-per-visit for each visit beyond the credits.';
+    var totalMembers = 100000;
+    var rows = TIERS.map(function (t, i) {
+      var usageInput = document.getElementById('use-' + i);
+      var usage = usageInput ? Number(usageInput.value) : t.usage;
+      var members = totalMembers * t.share;
+      var paidCredits = Math.min(usage, t.credits);
+      var overage = Math.max(0, usage - t.credits);
+      var memberRev = t.fee + overage * ppv * overPct;
+      var ppvRev = usage * ppv;
+      var delta = memberRev - ppvRev;
+      var label = delta >= 0 ? 'Adds ' + money(delta) + ' a month' : 'Gives up ' + money(-delta) + ' a month';
+      var cls = delta >= 0 ? 'ok' : 'bad';
+      return '<tr><td><b>' + t.name + '</b></td><td class="num">' + money(t.fee) + '</td><td class="num">' + t.credits + '</td><td class="num">' + Math.round(t.share * 100) + '%</td><td class="num">' + fmt(usage, 1) + '</td><td class="num"><span class="pill ' + cls + '">' + label + '</span></td></tr>';
+    }).join('');
+    $('tiers').innerHTML = rows;
+
+    if (!document.getElementById('use-0')) {
+      $('tier-usage').innerHTML = TIERS.map(function (t, i) {
+        return '<div class="field"><label for="use-' + i + '">' + t.name + ' visits a month</label><input id="use-' + i + '" type="range" min="0" max="10" step="0.2" value="' + t.usage + '"></div>';
+      }).join('');
+    }
+  }
+
+  document.addEventListener('input', function () { render(); renderTiers(); });
+
+  render();
+  renderTiers();
+})();
+</script>
+</body>
+</html>

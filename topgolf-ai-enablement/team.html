@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Team Enablement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span><span><b>Guest and Team AI</b><span>Enablement concept</span></span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Overview</a>
+      <a href="marketing.html">Marketing</a>
+      <a href="guests.html">Guest frequency</a>
+      <a href="team.html" aria-current="page">Team enablement</a>
+      <a href="pipeline.html">Pipeline and governance</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <header class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Module 3 · Team enablement</p>
+      <h1>Get every team using AI for the work they already do</h1>
+      <p class="lede">Adoption fails when people are told to use a tool without a reason, a path or a safe way to ask questions. This module gives each role a starting point, a reviewed set of prompts, and people who can answer questions in person.</p>
+    </div>
+  </header>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Readiness check</p><h2>Where do you start?</h2></div><p>Answer for yourself, honestly. Nothing is stored. The result suggests a learning path.</p></div>
+      <div class="split">
+        <div class="card" id="quiz" style="display:grid;gap:16px"></div>
+        <div class="card" style="display:grid;gap:14px;align-content:start">
+          <h3>Your result</h3>
+          <div id="result-bars" style="display:grid;gap:10px"></div>
+          <div id="path" style="border-top:1px solid var(--line-2);padding-top:14px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Role paths</p><h2>What each role does with AI first</h2></div><p>Each path starts with one task the role does every week, and a first session of about an hour.</p></div>
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Role</th><th>First task to try</th><th>Ask an AI assistant to…</th><th>Owner</th><th>First session</th></tr></thead>
+          <tbody>
+            <tr><td><b>Venue team lead</b></td><td>Shift handover notes</td><td>Turn the day's incident log into a three-line handover</td><td>Venue operations</td><td>Shift-start, 45 min</td></tr>
+            <tr><td><b>Guest services</b></td><td>Reply drafting</td><td>Draft a reply to a guest complaint from the approved response library</td><td>Guest services</td><td>Hands-on, 60 min</td></tr>
+            <tr><td><b>Food and beverage</b></td><td>Menu and prep notes</td><td>Turn a weekly sales export into a prep list for the kitchen</td><td>Food and beverage</td><td>Kitchen office hours, 60 min</td></tr>
+            <tr><td><b>Marketing</b></td><td>Campaign briefs</td><td>Build a brief from an approved audience and offer, then run the claims check</td><td>Marketing</td><td>Hands-on, 90 min</td></tr>
+            <tr><td><b>Finance</b></td><td>Variance commentary</td><td>Explain a week's revenue variance in plain language, with the numbers from the report</td><td>Finance</td><td>Hands-on, 60 min</td></tr>
+            <tr><td><b>Engineering</b></td><td>Review and tests</td><td>Write a test plan for a change, then review the output against the gates</td><td>Platform engineering</td><td>Pairing session, 90 min</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Prompt library</p><h2>Prompts that have been reviewed</h2></div><p>A prompt appears here only after a reviewer has checked it for accuracy, data handling and tone. Drafts are visible but labeled.</p></div>
+      <div class="row" style="margin-bottom:14px" id="lib-filters"></div>
+      <div class="grid g-2" id="lib"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">People and time</p><h2>Champions and office hours</h2></div><p>Champions are people in each region who have used the tools for their own work and will answer questions from colleagues. Figures are synthetic. The venue split is illustrative; its total matches the 103 domestic venues cited on the overview.</p></div>
+      <div class="grid g-3">
+        <div class="stat"><div class="l">Champions in place</div><div class="v" id="champs">0</div><div class="s">Across three regions</div></div>
+        <div class="stat"><div class="l">Office hours this month</div><div class="v" id="hours">0</div><div class="s">Held in venues, 30 minutes each</div></div>
+        <div class="stat"><div class="l">Teams with a reviewed prompt</div><div class="v" id="reviewed">0</div><div class="s">Of six role paths</div></div>
+      </div>
+      <div class="card scroll" style="margin-top:16px">
+        <table class="tbl">
+          <thead><tr><th>Region</th><th class="num">Venues</th><th class="num">Champions</th><th>Weekly active users</th><th>Next office hours</th></tr></thead>
+          <tbody id="regions"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>An unofficial concept built for a job application. Not affiliated with, endorsed by or connected to Topgolf or Callaway Brands. Champion counts, usage and schedules are synthetic.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+
+  var AREAS = [
+    { id: 'tools',  name: 'Tools', q: ['I have access to an approved AI assistant for work.', 'I have used it for a real task this month.'] },
+    { id: 'prompt', name: 'Prompting', q: ['I can say what I want, the context, and the format I need.', 'I check the output against the source before I use it.'] },
+    { id: 'data',   name: 'Data safety', q: ['I know which data must never go into a prompt.', 'I know who to ask when I am unsure what I can share.'] },
+    { id: 'review', name: 'Review habit', q: ['I read AI output before it reaches a guest or a colleague.', 'I flag output that looks wrong instead of fixing it quietly.'] },
+    { id: 'share',  name: 'Sharing', q: ['I have shared a prompt or method with a colleague.', 'I know where reviewed prompts live.'] }
+  ];
+  var SCALE = ['Not yet', 'A little', 'Often', 'Yes, routinely'];
+  var PATH = {
+    tools: { title: 'Start with access and one task', body: 'Book the first-session slot for your role and bring one routine task from this week.' },
+    prompt: { title: 'Practice a prompt structure', body: 'Use the context, task and format pattern on a task you have already done, then compare results.' },
+    data: { title: 'Learn the data rules first', body: 'Complete the data-safety session before any other use. It takes 20 minutes and covers what never goes into a prompt.' },
+    review: { title: 'Build the review habit', body: 'Pair with a champion for two weeks. Check every output against its source before using it.' },
+    share: { title: 'Share one reviewed prompt', body: 'Add one prompt that worked for you to the library as a draft. A reviewer will take it from there.' }
+  };
+
+  var answers = {};
+  function renderQuiz() {
+    $('quiz').innerHTML = AREAS.map(function (a) {
+      return '<fieldset style="border:0;padding:0;margin:0;display:grid;gap:10px;min-width:0"><legend style="font:600 15px/1.3 var(--display);margin-bottom:6px">' + esc(a.name) + '</legend>' +
+        a.q.map(function (q, i) {
+          var key = a.id + i;
+          return '<div class="field"><label for="' + key + '" style="text-transform:none;letter-spacing:0;font:400 14px/1.45 var(--body);color:var(--ink-2)">' + esc(q) + '</label>' +
+            '<select id="' + key + '" data-area="' + a.id + '">' + SCALE.map(function (s, v) { return '<option value="' + v + '"' + (answers[key] === v ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div>';
+        }).join('') + '</fieldset>';
+    }).join('');
+    renderResult();
+  }
+
+  function renderResult() {
+    var scores = AREAS.map(function (a) {
+      var total = 0, n = 0;
+      a.q.forEach(function (_, i) { var v = answers[a.id + i]; if (v == null) { v = 0; } total += v; n++; });
+      return { id: a.id, name: a.name, pct: total / (n * 3) * 100 };
+    });
+    $('result-bars').innerHTML = scores.map(function (s) {
+      var cls = s.pct < 34 ? 'bad' : s.pct < 67 ? 'gold' : '';
+      return '<div><div class="row" style="justify-content:space-between;font-size:13.5px"><span>' + esc(s.name) + '</span><span class="num muted">' + Math.round(s.pct) + '%</span></div><div class="bar" style="margin-top:6px"><i class="' + cls + '" style="width:' + s.pct.toFixed(0) + '%"></i></div></div>';
+    }).join('');
+    var lowest = scores.reduce(function (a, b) { return b.pct < a.pct ? b : a; }, scores[0]);
+    var p = PATH[lowest.id];
+    $('path').innerHTML = '<p class="eyebrow" style="margin-bottom:6px">Suggested next step</p><h3 style="font-size:16px">' + esc(p.title) + '</h3><p style="margin-top:6px;color:var(--ink-2);font-size:14.5px">' + esc(p.body) + '</p>';
+  }
+
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.tagName === 'SELECT' && t.hasAttribute('data-area')) {
+      answers[t.id] = Number(t.value);
+      renderResult();
+    }
+  });
+
+  var LIB = [
+    { id: 'P-101', title: 'Shift handover from an incident log', role: 'Venue team lead', status: 'Reviewed', data: 'Internal, no guest names', text: 'You are helping a venue team lead write a shift handover. From the incident log below, write three short lines: what happened, what is still open, and what the next shift must do first. Use only the facts in the log. If something is unclear, say so. Do not add names.\n\nLog:\n[paste incident log, with guest names removed]' },
+    { id: 'P-104', title: 'Reply draft from the response library', role: 'Guest services', status: 'Reviewed', data: 'Internal, guest message content', text: 'Draft a reply to the guest message below. Use only the approved responses in the library provided. Keep the tone warm and direct. Do not promise refunds or credits. End with the next step the guest can take.\n\nGuest message:\n[paste message with personal details removed]\n\nApproved responses:\n[paste library entries]' },
+    { id: 'P-108', title: 'Prep list from a weekly sales export', role: 'Food and beverage', status: 'Reviewed', data: 'Internal, aggregated sales', text: 'From the weekly sales export below, list the top items by volume and the change against last week. Turn this into a prep list for the kitchen, grouped by station. Flag any item with a change above 20 percent.\n\nExport:\n[paste aggregated export]' },
+    { id: 'P-112', title: 'Campaign brief with a claims check', role: 'Marketing', status: 'Reviewed', data: 'Internal, offer and audience', text: 'Write a campaign brief from the goal, audience and offer below. Then list every claim in the proposed copy and mark each as supported by a source, or needing legal review. Do not invent figures. Do not use superlatives unless legal has approved them.\n\nGoal:\nAudience:\nOffer:\nProposed copy:' },
+    { id: 'P-115', title: 'Variance commentary, plain language', role: 'Finance', status: 'Draft', data: 'Internal, reported figures', text: 'Explain the revenue variance below in three plain sentences for a non-finance manager. State the change in dollars and percent, the two largest drivers from the data, and one question for the team. Use only the figures provided.\n\nFigures:\n[paste the variance table]' },
+    { id: 'P-120', title: 'Test plan for a change', role: 'Engineering', status: 'Reviewed', data: 'Internal, code and specs', text: 'Given the change description and the diff below, write a test plan. List the cases that the change could break, the expected result for each, and any case that the diff does not cover. Do not write tests that assume behavior not stated in the spec.\n\nChange:\nDiff:' }
+  ];
+  var libFilter = 'All';
+  function renderLib() {
+    var roles = ['All'].concat(Array.from(new Set(LIB.map(function (p) { return p.role; }))));
+    $('lib-filters').innerHTML = roles.map(function (r) {
+      return '<button type="button" class="btn" data-role="' + r + '" aria-pressed="' + (r === libFilter) + '">' + esc(r) + '</button>';
+    }).join('');
+    var list = LIB.filter(function (p) { return libFilter === 'All' || p.role === libFilter; });
+    $('lib').innerHTML = list.map(function (p) {
+      var pill = p.status === 'Reviewed' ? '<span class="pill ok">Reviewed</span>' : '<span class="pill warn">Draft, not for use</span>';
+      return '<article class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><span class="mono muted">' + p.id + ' · ' + esc(p.role) + '</span>' + pill + '</div>' +
+        '<h3>' + esc(p.title) + '</h3>' +
+        '<pre class="mono" style="white-space:pre-wrap;margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--ink-2);font-size:12.5px;overflow-x:auto;min-width:0">' + esc(p.text) + '</pre>' +
+        '<div class="row" style="justify-content:space-between"><span class="muted" style="font-size:12.5px">Data class: ' + esc(p.data) + '</span>' +
+        (p.status === 'Reviewed' ? '<button type="button" class="btn" data-copy="' + p.id + '">Copy prompt</button>' : '') + '</div></article>';
+    }).join('');
+  }
+
+  document.addEventListener('click', function (e) {
+    var r = e.target.closest('[data-role]');
+    if (r) { libFilter = r.getAttribute('data-role'); renderLib(); return; }
+    var c = e.target.closest('[data-copy]');
+    if (c) {
+      var p = LIB.filter(function (x) { return x.id === c.getAttribute('data-copy'); })[0];
+      try {
+        navigator.clipboard.writeText(p.text).then(function () { c.textContent = 'Copied'; }, function () { c.textContent = 'Select and copy'; });
+      } catch (err) { c.textContent = 'Select and copy'; }
+    }
+  });
+
+  var REGIONS = [
+    { name: 'Region A', venues: 35, champs: 5, wau: 0.64, next: 'Thu 27 Nov, in person' },
+    { name: 'Region B', venues: 34, champs: 4, wau: 0.51, next: 'Tue 2 Dec, video' },
+    { name: 'Region C', venues: 34, champs: 5, wau: 0.58, next: 'Wed 3 Dec, in person' }
+  ];
+  function renderRegions() {
+    var champs = 0, hours = 0;
+    $('regions').innerHTML = REGIONS.map(function (r) {
+      champs += r.champs; hours += 4;
+      return '<tr><td><b>' + r.name + '</b></td><td class="num">' + r.venues + '</td><td class="num">' + r.champs + '</td><td><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:' + Math.round(r.wau * 100) + '%"></i></div><span class="num muted" style="font-size:12.5px;min-width:44px">' + Math.round(r.wau * 100) + '%</span></div></td><td>' + esc(r.next) + '</td></tr>';
+    }).join('');
+    $('champs').textContent = String(champs);
+    $('hours').textContent = String(hours);
+    $('reviewed').textContent = String(new Set(LIB.filter(function (p) { return p.status === 'Reviewed'; }).map(function (p) { return p.role; })).size);
+  }
+
+  renderQuiz();
+  renderLib();
+  renderRegions();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipeline and Governance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span><span><b>Guest and Team AI</b><span>Enablement concept</span></span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Overview</a>
+      <a href="marketing.html">Marketing</a>
+      <a href="guests.html">Guest frequency</a>
+      <a href="team.html">Team enablement</a>
+      <a href="pipeline.html" aria-current="page">Pipeline and governance</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <header class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Module 4 · Pipeline and governance</p>
+      <h1>Which AI apps teams need, and what has to be true before each one ships</h1>
+      <p class="lede">Every app goes through the same path: intake, build, automated gates, human review, staging, release and monitoring. The data an app can touch decides how strict its gates are. Some apps are not approved at all, and this page says so.</p>
+    </div>
+  </header>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">The path to production</p><h2>Seven stages, three of them human</h2></div><p>Automated checks catch mistakes that repeat. People catch the rest, so review is the point of the pipeline, not a formality at the end.</p></div>
+      <ol class="steps" style="max-width:820px">
+        <li><div><b>Intake</b><span>The builder answers the intake questions. The request is matched to an existing app or sent for a new one. Data class is set here.</span></div></li>
+        <li><div><b>Build</b><span>The app is built from a scaffold with the standard guardrails already wired in: scope limits, output schema and logging.</span></div></li>
+        <li><div><b>Automated gates</b><span>Tests, secrets scan, static analysis, and a scope check that compares what the app can reach with what it declared.</span></div></li>
+        <li><div><b>Adversarial tests</b><span>The app is run against prompt-injection and jailbreak cases. Any case that gets through blocks release until fixed.</span></div></li>
+        <li><div><b>Human review</b><span>A reviewer checks correctness, authorization, data handling and whether the app should exist. Guest-facing apps need a second reviewer.</span></div></li>
+        <li><div><b>Staging</b><span>The app runs against recorded or synthetic data for at least one full week, with the output logged for review.</span></div></li>
+        <li><div><b>Release and monitor</b><span>Released with an owner and a review date. Acceptance rate and complaints are tracked, and a drop triggers review.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">App catalog</p><h2>What teams need, and where each app stands</h2></div><p>Status is honest: planned means nothing is built. Not approved means the platform will not automate this, whatever the demand.</p></div>
+      <div class="card scroll">
+        <table class="tbl">
+          <thead><tr><th>App</th><th>Team</th><th>What it does</th><th>Data class</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><b>Campaign studio</b></td><td>Marketing</td><td>Builds campaign briefs and runs the claims and frequency checks</td><td><span class="pill">Internal, aggregated</span></td><td><span class="pill ok">Pilot in this platform</span></td></tr>
+            <tr><td><b>Guest frequency simulator</b></td><td>Marketing, finance</td><td>Models contact frequency and membership tiers before any offer goes live</td><td><span class="pill">Internal, aggregated</span></td><td><span class="pill ok">Pilot in this platform</span></td></tr>
+            <tr><td><b>Shift handover summaries</b></td><td>Venue teams</td><td>Turns an incident log into three handover lines for the next shift</td><td><span class="pill warn">Internal, may include guest names</span></td><td><span class="pill ok">Pilot</span></td></tr>
+            <tr><td><b>Prep lists from sales exports</b></td><td>Food and beverage</td><td>Groups top sellers and week-on-week changes into a kitchen prep list</td><td><span class="pill">Internal, aggregated</span></td><td><span class="pill ok">Pilot</span></td></tr>
+            <tr><td><b>Sales anomaly alerts</b></td><td>Finance, venue operations</td><td>Flags unusual sales or labor patterns from point-of-sale data for a human to check</td><td><span class="pill">Internal, aggregated</span></td><td><span class="pill accent">Planned</span></td></tr>
+            <tr><td><b>Guest question assistant</b></td><td>Guest services</td><td>Answers questions from the approved FAQ, with a link to the source for every answer</td><td><span class="pill warn">Public FAQ plus guest context</span></td><td><span class="pill accent">Planned, needs legal review</span></td></tr>
+            <tr><td><b>Reservation and waitlist helper</b></td><td>Venue operations</td><td>Suggests waitlist order and flags likely no-shows for the host to confirm</td><td><span class="pill bad">Personal guest data</span></td><td><span class="pill accent">Planned, high-risk review</span></td></tr>
+            <tr><td><b>Personalized pricing for guests</b></td><td>Not applicable</td><td>Would set different prices for different guests</td><td><span class="pill bad">Personal guest data</span></td><td><span class="pill bad">Not approved</span></td></tr>
+            <tr><td><b>Automated safety decisions</b></td><td>Not applicable</td><td>Would decide on an incident or a safety response without a person</td><td><span class="pill bad">Safety</span></td><td><span class="pill bad">Not approved, human-led</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Data classes</p><h2>The data an app touches sets its rules</h2></div><p>When in doubt, the app takes the higher class until a data owner confirms otherwise.</p></div>
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Class</th><th>Examples</th><th>AI tools allowed</th><th>Required before release</th></tr></thead>
+          <tbody>
+            <tr><td><b>Public</b></td><td>Published offers, FAQ, venue hours</td><td>Approved assistants</td><td>Marketing review</td></tr>
+            <tr><td><b>Internal, aggregated</b></td><td>Totals by venue, sales by item, labor by shift</td><td>Approved assistants, governed connectors</td><td>Standard gates and human review</td></tr>
+            <tr><td><b>Internal, personal</b></td><td>Guest names, booking details, feedback with names</td><td>Only tools that keep data in the company environment</td><td>Standard gates, second reviewer, data owner sign-off</td></tr>
+            <tr><td><b>Restricted</b></td><td>Anything involving minors, payments or safety records</td><td>None without written approval</td><td>Legal, security and the data owner</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Release gate</p><h2>Check an app before it ships</h2></div><p>Pick an app to see which checks it needs. The decision updates as you tick each one.</p></div>
+      <div class="split">
+        <div class="card" style="display:grid;gap:14px;align-content:start">
+          <div class="field"><label for="app">App</label>
+            <select id="app">
+              <option value="handover">Shift handover summaries</option>
+              <option value="assistant">Guest question assistant</option>
+              <option value="waitlist">Reservation and waitlist helper</option>
+            </select>
+          </div>
+          <div class="row"><span id="class-pill" class="pill"></span><span class="muted" style="font-size:13px" id="class-note"></span></div>
+        </div>
+        <div class="card" style="display:grid;gap:16px">
+          <ul class="checks" id="gate" style="margin:0"></ul>
+          <div class="row" style="border-top:1px solid var(--line-2);padding-top:14px;justify-content:space-between"><b>Decision</b><span id="decision" class="pill"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">When something goes wrong</p><h2>A guest message is wrong</h2></div><p>Assume it will happen once. The question is how fast it is found and fixed.</p></div>
+      <div class="grid g-2">
+        <div class="card"><h3>In the first hour</h3><ul class="checks" style="margin-top:10px"><li class="pass"><span class="mk">1</span><span>Pause the app for that audience. Any other audience keeps running.</span></li><li class="pass"><span class="mk">2</span><span>Find every message sent in the window, from the log, not from memory.</span></li><li class="pass"><span class="mk">3</span><span>Tell the guest services lead who owns the guest reply.</span></li></ul></div>
+        <div class="card"><h3>In the first day</h3><ul class="checks" style="margin-top:10px"><li class="pass"><span class="mk">4</span><span>Write what went wrong, what was sent and to whom, in plain language.</span></li><li class="pass"><span class="mk">5</span><span>Add the case to the adversarial suite so the test fails before any fix.</span></li><li class="pass"><span class="mk">6</span><span>Review in a blameless session with the owner and a reviewer.</span></li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><div><p class="eyebrow">Assumptions to confirm</p><h2>What this concept does not know yet</h2></div></div>
+      <div class="card">
+        <ul class="checks">
+          <li class="warn"><span class="mk">!</span><span>Which AI tools are approved for internal use, and which data they may receive.</span></li>
+          <li class="warn"><span class="mk">!</span><span>Whether a rewards or loyalty program exists. The public app page does not describe one.</span></li>
+          <li class="warn"><span class="mk">!</span><span>The actual membership tiers, prices and credits. The planned tiers are public, the details are not.</span></li>
+          <li class="warn"><span class="mk">!</span><span>Which systems hold guest data and who owns each one. The new CIO's remit covers data, but the systems are not public.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>An unofficial concept built for a job application. Not affiliated with, endorsed by or connected to Topgolf or Callaway Brands. App statuses describe this concept, not any real product.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var APPS = {
+    handover: {
+      cls: 'Internal, may include guest names', pill: 'warn',
+      note: 'Summaries can contain guest names, so the personal-data rules apply.',
+      gates: [
+        { id: 'tests', t: 'Unit tests and output schema pass', req: true },
+        { id: 'secrets', t: 'Secrets scan is clean', req: true },
+        { id: 'scope', t: 'Scope check: reads only the incident log', req: true },
+        { id: 'names', t: 'Guest names removed before any prompt', req: true },
+        { id: 'adv', t: 'Adversarial suite run, no leaks', req: true },
+        { id: 'review', t: 'Second reviewer signed off', req: true },
+        { id: 'staging', t: 'One week in staging with logged output', req: true }
+      ]
+    },
+    assistant: {
+      cls: 'Public FAQ plus guest context', pill: 'warn',
+      note: 'Guest-facing: the strictest path, with legal review before release.',
+      gates: [
+        { id: 'tests', t: 'Unit tests and output schema pass', req: true },
+        { id: 'secrets', t: 'Secrets scan is clean', req: true },
+        { id: 'cite', t: 'Every answer links to a source paragraph, or is withheld', req: true },
+        { id: 'inject', t: 'Injected text in documents stripped and logged', req: true },
+        { id: 'adv', t: 'Adversarial suite run, no leaks', req: true },
+        { id: 'legal', t: 'Legal review of the answer policy', req: true },
+        { id: 'review', t: 'Second reviewer signed off', req: true },
+        { id: 'staging', t: 'One week in staging, answers sampled daily', req: true },
+        { id: 'optout', t: 'Staff can switch the assistant off in one step', req: true }
+      ]
+    },
+    waitlist: {
+      cls: 'Personal guest data', pill: 'bad',
+      note: 'Personal guest data. Needs data owner sign-off before any build starts.',
+      gates: [
+        { id: 'owner', t: 'Data owner signed off on the use', req: true },
+        { id: 'human', t: 'Host confirms every suggestion; nothing is automatic', req: true },
+        { id: 'tests', t: 'Unit tests and output schema pass', req: true },
+        { id: 'secrets', t: 'Secrets scan is clean', req: true },
+        { id: 'scope', t: 'Scope check: reads booking fields only', req: true },
+        { id: 'fair', t: 'Fairness check: no decisions based on protected traits', req: true },
+        { id: 'adv', t: 'Adversarial suite run, no leaks', req: true },
+        { id: 'review', t: 'Second reviewer signed off', req: true },
+        { id: 'staging', t: 'One week in staging', req: true }
+      ]
+    }
+  };
+  var checked = {};
+
+  function render() {
+    var key = $('app').value, a = APPS[key];
+    var pill = $('class-pill');
+    pill.textContent = a.cls;
+    pill.className = 'pill ' + a.pill;
+    $('class-note').textContent = a.note;
+
+    var list = $('gate');
+    list.innerHTML = a.gates.map(function (g) {
+      var k = key + ':' + g.id, on = !!checked[k];
+      return '<li class="' + (on ? 'pass' : '') + '"><span class="mk">' + (on ? '✓' : '') + '</span><label style="cursor:pointer;display:block"><input type="checkbox" data-key="' + k + '" ' + (on ? 'checked' : '') + ' style="position:absolute;opacity:0;width:0;height:0"> ' + g.t + '</label></li>';
+    }).join('');
+
+    var done = a.gates.filter(function (g) { return checked[key + ':' + g.id]; }).length;
+    var all = done === a.gates.length;
+    var d = $('decision');
+    d.textContent = all ? 'Ready to release' : 'Blocked: ' + (a.gates.length - done) + ' check' + (a.gates.length - done === 1 ? '' : 's') + ' open';
+    d.className = 'pill ' + (all ? 'ok' : 'bad');
+  }
+
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'app') { render(); return; }
+    if (e.target.matches('input[type="checkbox"][data-key]')) {
+      checked[e.target.getAttribute('data-key')] = e.target.checked;
+      render();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
