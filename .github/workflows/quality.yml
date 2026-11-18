@@ -1,0 +1,93 @@
+name: quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A permission set the workflow itself needs and nothing more.
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governance:
+    name: governance checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Rebuild the pipeline and verify the data contract
+        run: python scripts/build_pipeline.py
+
+      - name: Data pipeline tests
+        run: pytest tests/test_pipeline.py -q
+
+      - name: Guardrail engine self-test
+        run: python -m security.guardrails.guardrails --self-test
+
+      - name: Adversarial suite
+        run: python -m security.adversarial.run_suite
+
+      - name: Secrets scan (working tree)
+        run: python -m security.guardrails.secrets_scan
+
+      - name: Secrets scan (git history)
+        run: |
+          # The working tree scan cannot see a secret that was committed and later
+          # removed. Scan history too, so a removed credential is still a finding.
+          if git log -p --all -- . ':!package-lock.json' \
+               | grep -nEi 'AKIA[0-9A-Z]{16}|ghp_[0-9A-Za-z]{36}|xox[baprs]-[0-9A-Za-z-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----' \
+               | head -20; then
+            echo "::error::Potential credential found in git history."
+            exit 1
+          fi
+          echo "Git history clean."
+
+      - name: Governed MCP server tests
+        run: pytest tests/test_mcp_server.py -q
+
+      - name: Platform topology tests
+        run: pytest tests/test_topology.py -q
+
+      - name: Platform topology generates
+        run: python -m platform.topology.topology
+
+      - name: Archetype health and drift report
+        run: python -m monitoring.health_report
+
+      - name: Archetype catalog integrity
+        run: python -m monitoring.validate_catalog
+
+  web:
+    name: web build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
