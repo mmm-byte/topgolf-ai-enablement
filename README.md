@@ -30,6 +30,8 @@ them when they stop earning their place.
 10. **Enablement** — the readiness check, role paths, and office-hours formats.
 11. **Evidence map** — every responsibility in the role description, and what answers it.
 12. **Data & metrics** — the fixture, the metric catalog, and the executed quality checks.
+13. **Platform map** — the six domains of the platform, the question each one answers, and
+    the files that implement it.
 
 ---
 

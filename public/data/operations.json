@@ -6,7 +6,7 @@
     "period_end": "2025-11-27",
     "coverage_days": 331,
     "seed": 1847,
-    "refreshed_at": "2026-11-17",
+    "refreshed_at": "2026-11-18",
     "synthetic": true,
     "disclaimer": "All records are synthetic. Not Topgolf data. No internal system was accessed.",
     "gold_tables": {
@@ -55,6 +55,8 @@
       "archetypes_declined": 3,
       "adversarial_cases": 18,
       "adversarial_passed": 18,
+      "guardrail_cases": 11,
+      "guardrail_passed": 11,
       "quality_checks": 17,
       "quality_passed": 17
     }
@@ -2126,6 +2128,11 @@
           ]
         }
       ]
+    },
+    "guardrail_selftest": {
+      "total": 11,
+      "passed": 11,
+      "ok": true
     },
     "catalog_validation": {
       "catalog_version": "3.2.0",

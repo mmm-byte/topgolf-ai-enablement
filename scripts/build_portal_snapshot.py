@@ -11,6 +11,7 @@ Run after `scripts/build_pipeline.py`:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -45,6 +46,22 @@ def _run_json(module: str) -> dict:
         return {"error": "could not parse module output"}
 
 
+def _run_guardrail_self_test() -> dict:
+    """Capture the guardrail engine's own self-test result.
+
+    The engine prints `Self-test: <passed>/<total> passed`. That line is parsed rather
+    than hardcoded so the portal cannot publish a number the engine no longer produces.
+    """
+    result = subprocess.run(
+        [sys.executable, "-m", "security.guardrails.guardrails", "--self-test"],
+        capture_output=True, text=True, cwd=ROOT)
+    match = re.search(r"Self-test:\s*(\d+)/(\d+)\s*passed", result.stdout)
+    if not match:
+        return {"total": 0, "passed": 0, "ok": False}
+    passed, total = int(match.group(1)), int(match.group(2))
+    return {"total": total, "passed": passed, "ok": passed == total}
+
+
 def build() -> dict:
     snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
 
@@ -55,6 +72,7 @@ def build() -> dict:
     catalog_validation = _run_json("monitoring.validate_catalog")
 
     topology = _run_json("platform.topology.topology")
+    guardrail_selftest = _run_guardrail_self_test()
 
     snapshot["governance"] = {
         "archetype_catalog": {
@@ -72,6 +90,7 @@ def build() -> dict:
         },
         "health": health,
         "adversarial": adversarial,
+        "guardrail_selftest": guardrail_selftest,
         "catalog_validation": catalog_validation,
         "topology": topology,
     }
@@ -83,6 +102,8 @@ def build() -> dict:
         "archetypes_declined": len(catalog.get("declined", [])),
         "adversarial_cases": adversarial.get("total", 0),
         "adversarial_passed": adversarial.get("passed", 0),
+        "guardrail_cases": guardrail_selftest.get("total", 0),
+        "guardrail_passed": guardrail_selftest.get("passed", 0),
         "quality_checks": len(snapshot.get("quality", [])),
         "quality_passed": sum(1 for c in snapshot.get("quality", []) if c["status"] == "PASS"),
     }
@@ -100,6 +121,7 @@ def main() -> int:
     print(f"  connectors: {artifacts['connectors']} approved, "
           f"{artifacts['connectors_pending']} pending")
     print(f"  adversarial cases: {artifacts['adversarial_passed']}/{artifacts['adversarial_cases']}")
+    print(f"  guardrail self-test: {artifacts['guardrail_passed']}/{artifacts['guardrail_cases']}")
     print(f"  quality checks: {artifacts['quality_passed']}/{artifacts['quality_checks']}")
     return 0
 

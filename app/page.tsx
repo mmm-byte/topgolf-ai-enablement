@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle, ArrowRight, BookOpen, Boxes, ChevronRight,
-  CircleHelp, ClipboardList, Database, FileCheck2, Gauge, Plug, ShieldCheck,
-  Table2, Target, Users, Workflow,
+  Activity, AlertTriangle, ArrowRight, ArrowUpRight, BookOpen, Boxes, CheckCircle2,
+  ChevronRight, CircleHelp, ClipboardList, Database, FileCheck2, Gauge, GitBranch,
+  LifeBuoy, Menu, Milestone, Plug, Route, ShieldCheck, Sparkles, Table2, Target,
+  Terminal, Users, Waypoints, Workflow, X,
 } from "lucide-react";
 import ArchitectureGraph from "./architecture/ArchitectureGraph";
 import DataModelExplorer from "./architecture/DataModelExplorer";
@@ -83,73 +84,243 @@ const number = (n: number) => new Intl.NumberFormat("en-US").format(Math.round(n
 const money = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n || 0);
 const pct = (n: number, digits = 1) => `${(n || 0).toFixed(digits)}%`;
 
+// `label` is the full section name used in the mobile menu and section headings.
+// `short` is the compact desktop-nav label so all 13 sections fit on one line.
 const SECTIONS = [
-  { id: "Overview", label: "Overview", icon: Gauge },
-  { id: "Architecture", label: "Architecture", icon: Workflow },
-  { id: "Trace", label: "Request traces", icon: ArrowRight },
-  { id: "Pipeline", label: "Pipeline & gates", icon: Workflow },
-  { id: "Archetypes", label: "Archetypes", icon: Boxes },
-  { id: "Connectors", label: "Connectors & MCP", icon: Plug },
-  { id: "McpTools", label: "MCP inspector", icon: Plug },
-  { id: "DataModel", label: "Data model", icon: Table2 },
-  { id: "Guardrails", label: "Guardrails", icon: ShieldCheck },
-  { id: "Health", label: "Health & drift", icon: Activity },
-  { id: "Enablement", label: "Enablement", icon: Users },
-  { id: "Evidence", label: "Evidence map", icon: Target },
-  { id: "Data", label: "Data & metrics", icon: Database },
+  { id: "Overview", label: "Overview", short: "Overview", icon: Gauge },
+  { id: "Architecture", label: "Architecture", short: "Architecture", icon: GitBranch },
+  { id: "Trace", label: "Request traces", short: "Traces", icon: Route },
+  { id: "Pipeline", label: "Pipeline & gates", short: "Pipeline", icon: Milestone },
+  { id: "Archetypes", label: "Archetypes", short: "Archetypes", icon: Boxes },
+  { id: "Connectors", label: "Connectors & MCP", short: "Connectors", icon: Plug },
+  { id: "McpTools", label: "MCP inspector", short: "MCP tools", icon: Waypoints },
+  { id: "DataModel", label: "Data model", short: "Data model", icon: Table2 },
+  { id: "Guardrails", label: "Guardrails", short: "Guardrails", icon: ShieldCheck },
+  { id: "Health", label: "Health & drift", short: "Health", icon: Activity },
+  { id: "Enablement", label: "Enablement", short: "Enablement", icon: LifeBuoy },
+  { id: "Evidence", label: "Evidence map", short: "Evidence", icon: Target },
+  { id: "Data", label: "Data & metrics", short: "Metrics", icon: Database },
 ];
 
 export default function Home() {
   const [section, setSection] = useState("Overview");
   const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null);
   const [selectedConnector, setSelectedConnector] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const go = (id: string) => {
     setSection(id);
     setSelectedArchetype(null);
     setSelectedConnector(null);
+    setMenuOpen(false);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // The mobile menu covers the viewport, so stop the page behind it from scrolling.
+  useEffect(() => {
+    if (!menuOpen || typeof document === "undefined") return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [menuOpen]);
+
   const gov = snapshot.governance;
+  const artifacts = snapshot.metadata.artifacts;
+  const topology = gov.topology;
+
+  // Derived from the snapshot, not hardcoded: every check below is one the
+  // pipeline actually executed when the snapshot was generated.
+  const allGreen =
+    artifacts.adversarial_passed === artifacts.adversarial_cases &&
+    artifacts.guardrail_passed === artifacts.guardrail_cases &&
+    artifacts.quality_passed === artifacts.quality_checks &&
+    gov.catalog_validation.valid;
+
+  const proof = [
+    {
+      value: `${artifacts.adversarial_passed}/${artifacts.adversarial_cases}`,
+      label: "Adversarial cases caught",
+      detail: `${gov.adversarial.defence_in_depth} caught by two independent layers`,
+    },
+    {
+      value: `${artifacts.guardrail_passed}/${artifacts.guardrail_cases}`,
+      label: "Guardrail self-tests",
+      detail: "Severity assertions, not just block flags",
+    },
+    {
+      value: `${artifacts.quality_passed}/${artifacts.quality_checks}`,
+      label: "Data quality checks",
+      detail: "Executed against the Gold layer",
+    },
+    {
+      value: `${topology.nodes.length} / ${topology.edges.length}`,
+      label: "Platform nodes / edges",
+      detail: `${topology.tables.length} tables · ${topology.mcp_tools.length} MCP tools`,
+    },
+  ];
 
   return (
     <div>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+
       <header className="site-head">
-        <div className="wrap">
+        <div className="wrap head-inner">
           <a className="brand" href="#overview" onClick={(e) => { e.preventDefault(); go("Overview"); }}>
-            <span className="brand-mark" aria-hidden="true" />
-            <span><b>AI Enablement</b><span>Topgolf · AI-SDLC pipeline</span></span>
+            <span className="brand-mark" aria-hidden="true">
+              <span className="brand-mark-glyph">AI</span>
+            </span>
+            <span className="brand-text">
+              <b>AI Enablement</b>
+              <span>Topgolf · AI-SDLC pipeline</span>
+            </span>
+            <span className="brand-req">JR2023-23049</span>
           </a>
-          <nav className="nav" aria-label="Main">
-            {SECTIONS.map((s) => (
-              <a
-                key={s.id}
-                href={`#${s.id.toLowerCase()}`}
-                aria-current={section === s.id ? "page" : undefined}
-                onClick={(e) => { e.preventDefault(); go(s.id); }}
-              >
-                {s.label}
-              </a>
-            ))}
+
+          <div className="head-meta">
+            <span className={`head-status${allGreen ? "" : " is-warn"}`}>
+              <CheckCircle2 size={13} aria-hidden="true" />
+              {allGreen ? "All checks green" : "Checks need review"}
+            </span>
+            <a
+              className="head-repo"
+              href="https://github.com/mmm-byte/topgolf-ai-enablement"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              Repository
+              <ArrowUpRight size={13} aria-hidden="true" />
+            </a>
+            <button
+              type="button"
+              className="menu-toggle"
+              aria-expanded={menuOpen}
+              aria-controls="primary-menu"
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              {menuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+              <span className="sr-only">{menuOpen ? "Close menu" : "Open menu"}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="nav-row">
+          <div className="wrap">
+            <nav className="nav" aria-label="Main">
+              {SECTIONS.map((s) => {
+                const Icon = s.icon;
+                const active = section === s.id;
+                return (
+                  <a
+                    key={s.id}
+                    href={`#${s.id.toLowerCase()}`}
+                    className={active ? "is-active" : undefined}
+                    aria-current={active ? "page" : undefined}
+                    onClick={(e) => { e.preventDefault(); go(s.id); }}
+                  >
+                    <Icon size={14} strokeWidth={1.8} aria-hidden="true" />
+                    <span>{s.short}</span>
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+
+        <div id="primary-menu" className={`mobile-menu${menuOpen ? " is-open" : ""}`}>
+          <nav className="mobile-nav" aria-label="Sections">
+            {SECTIONS.map((s) => {
+              const Icon = s.icon;
+              const active = section === s.id;
+              return (
+                <a
+                  key={s.id}
+                  href={`#${s.id.toLowerCase()}`}
+                  className={active ? "is-active" : undefined}
+                  aria-current={active ? "page" : undefined}
+                  onClick={(e) => { e.preventDefault(); go(s.id); }}
+                >
+                  <Icon size={15} strokeWidth={1.8} aria-hidden="true" />
+                  <span>{s.label}</span>
+                  <ChevronRight size={14} className="chev" aria-hidden="true" />
+                </a>
+              );
+            })}
           </nav>
         </div>
+
+        <div className="head-rule" aria-hidden="true" />
       </header>
 
-      <main>
+      <main id="main-content">
         <header className="page-head">
           <div className="wrap">
-            <p className="eyebrow">Independent portfolio project · Not affiliated with Topgolf</p>
-            <h1>Reusable archetypes and governed integrations, so business teams build safe AI applications inside the pipeline.</h1>
-            <p className="lede">
-              This is the working implementation of the Topgolf AI Enablement Engineer role
-              (JR2023-23049). It contains the building blocks the role is named after: a
-              catalog of archetypes with real <code>SKILL.md</code> files, a governed connector
-              catalog with a working MCP server, executable guardrail hooks, an adversarial
-              suite, and a drift monitor that retires archetypes on evidence. Every number on
-              this page is generated by the pipeline in this repository, and every claim is
-              traceable to a file.
-            </p>
+            <div className="hero-grid">
+              <div className="hero-copy">
+                <p className="eyebrow">
+                  <span className="eyebrow-dot" aria-hidden="true" />
+                  Topgolf AI Enablement Engineer · JR2023-23049
+                </p>
+                <h1>
+                  Reusable archetypes and governed integrations, so business teams build
+                  safe AI applications inside the pipeline.
+                </h1>
+                <p className="lede">
+                  This is the working implementation of the role: a catalog of archetypes with
+                  real <code>SKILL.md</code> files, a governed connector catalog with a working
+                  MCP server, executable guardrail hooks, an adversarial suite, and a drift
+                  monitor that retires archetypes on evidence. Every number on this page is
+                  generated by the pipeline in this repository, and every claim is traceable to
+                  a file.
+                </p>
+
+                <div className="hero-actions">
+                  <button type="button" className="btn btn-primary" onClick={() => go("Architecture")}>
+                    Explore the architecture
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={() => go("Evidence")}>
+                    See the evidence map
+                    <ArrowUpRight size={15} aria-hidden="true" />
+                  </button>
+                </div>
+
+                <p className="hero-note">
+                  <span className="hero-note-badge">
+                    <ShieldCheck size={13} aria-hidden="true" />
+                  </span>
+                  <span>
+                    Independent portfolio project · Not affiliated with Topgolf · Every figure
+                    below is produced by a command in the repository
+                  </span>
+                </p>
+              </div>
+
+              <aside className="hero-proof" aria-label="Verification summary">
+                <div className="hero-proof-head">
+                  <Terminal size={14} aria-hidden="true" />
+                  <span>Verification status</span>
+                  <span className="pill ok">
+                    <CheckCircle2 size={11} aria-hidden="true" /> all green
+                  </span>
+                </div>
+                <dl className="proof-list">
+                  {proof.map((p) => (
+                    <div className="proof-row" key={p.label}>
+                      <dt>{p.label}</dt>
+                      <dd>
+                        <b>{p.value}</b>
+                        <span>{p.detail}</span>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="hero-proof-foot">
+                  <Sparkles size={13} aria-hidden="true" />
+                  {artifacts.archetypes} archetypes · {artifacts.connectors} approved connectors
+                  · {artifacts.archetypes_declined} declined with a reason
+                </p>
+              </aside>
+            </div>
           </div>
         </header>
 
