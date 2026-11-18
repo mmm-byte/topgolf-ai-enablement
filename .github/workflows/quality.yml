@@ -46,16 +46,11 @@ jobs:
         run: python -m security.guardrails.secrets_scan
 
       - name: Secrets scan (git history)
-        run: |
-          # The working tree scan cannot see a secret that was committed and later
-          # removed. Scan history too, so a removed credential is still a finding.
-          if git log -p --all -- . ':!package-lock.json' \
-               | grep -nEi 'AKIA[0-9A-Z]{16}|ghp_[0-9A-Za-z]{36}|xox[baprs]-[0-9A-Za-z-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----' \
-               | head -20; then
-            echo "::error::Potential credential found in git history."
-            exit 1
-          fi
-          echo "Git history clean."
+        # The working tree scan cannot see a secret that was committed and later
+        # removed. Scan history too, using the same patterns and the same
+        # allowlist as the working-tree scan, so a documented example value is
+        # not reported here either.
+        run: python -m security.guardrails.secrets_scan --history
 
       - name: Governed MCP server tests
         run: pytest tests/test_mcp_server.py -q

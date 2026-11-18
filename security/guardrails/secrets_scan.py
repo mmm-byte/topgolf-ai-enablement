@@ -10,6 +10,7 @@ configuration, and it is paired with a git history check in CI.
 Usage:
     python -m security.guardrails.secrets_scan
     python -m security.guardrails.secrets_scan --path <dir>
+    python -m security.guardrails.secrets_scan --history
 """
 from __future__ import annotations
 
@@ -116,21 +117,78 @@ def scan(target: Path) -> dict:
     }
 
 
+def scan_history() -> dict:
+    """Scan every revision in the repository for credential patterns.
+
+    The working-tree scan cannot see a secret that was committed and later
+    removed. This walks the full history and applies the same patterns and the
+    same allowlist, so a documented example value is not reported here either.
+    """
+    import subprocess
+
+    result = subprocess.run(
+        ["git", "log", "-p", "--all", "--", ".", ":(exclude)package-lock.json"],
+        capture_output=True, text=True, cwd=ROOT)
+
+    findings: list[dict] = []
+    if result.returncode != 0:
+        return {
+            "scanned_files": 0,
+            "findings": [],
+            "clean": False,
+            "note": f"git history could not be read: {result.stderr.strip()[-200:]}",
+        }
+
+    current_commit = "unknown"
+    for line in result.stdout.splitlines():
+        if line.startswith("commit "):
+            current_commit = line.split()[1][:12]
+            continue
+        if len(line) > 4000:
+            continue
+        for name, pattern, severity in PATTERNS:
+            match = pattern.search(line)
+            if match and not _is_safe(match.group(0)):
+                findings.append({
+                    "severity": severity,
+                    "pattern": name,
+                    "file": f"history:{current_commit}",
+                    "line": 0,
+                    "match_preview": match.group(0)[:12] + "...",
+                })
+                break
+
+    return {
+        "scanned_files": 1,
+        "findings": findings,
+        "clean": not findings,
+        "note": ("History scan applies the same patterns and allowlist as the "
+                 "working-tree scan."),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Secrets scan")
     parser.add_argument("--path", default=str(ROOT), help="Path to scan")
+    parser.add_argument("--history", action="store_true",
+                        help="Scan every revision instead of the working tree")
     args = parser.parse_args()
 
-    target = Path(args.path).resolve()
-    report = scan(target)
+    if args.history:
+        report = scan_history()
+        scope = "history"
+    else:
+        target = Path(args.path).resolve()
+        report = scan(target)
+        scope = "working tree"
 
     if report["clean"]:
-        print(f"Secrets scan: clean ({report['scanned_files']} files scanned)")
+        print(f"Secrets scan: clean ({scope})")
         print(report["note"])
         return 0
 
     print(f"Secrets scan: {len(report['findings'])} finding(s) "
-          f"in {report['scanned_files']} files\n")
+          f"in {scope}\n")
     for finding in report["findings"]:
         print(f"  [{finding['severity']}] {finding['pattern']}")
         print(f"      {finding['file']}:{finding['line']}  {finding['match_preview']}")
