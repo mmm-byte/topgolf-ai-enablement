@@ -67,7 +67,7 @@ decision. Name them.
 ## 4. The contract
 
 **4.1 Which connector provides the data?**
-Must be in the [connector catalog](../../platform/connectors/). If the connector does not
+Must be in the [connector catalog](../../aiplatform/connectors/). If the connector does not
 exist, that is a platform request, not an archetype request.
 
 **4.2 What is the runtime constraint?**

@@ -124,7 +124,7 @@ def validate() -> dict:
         if not declined.get("route"):
             errors.append(f"declined '{declined.get('name')}': missing route")
 
-    connector_catalog_path = ROOT / "platform" / "connectors" / "catalog.yaml"
+    connector_catalog_path = ROOT / "aiplatform" / "connectors" / "catalog.yaml"
     if connector_catalog_path.exists():
         connector_catalog = _yaml.safe_load(connector_catalog_path.read_text(encoding="utf-8"))
         known = {c["id"] for c in (connector_catalog.get("connectors") or [])}

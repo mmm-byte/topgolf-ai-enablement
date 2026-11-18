@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 CATALOG = ROOT / "archetypes" / "catalog.yaml"
-CONNECTORS = ROOT / "platform" / "connectors" / "catalog.yaml"
+CONNECTORS = ROOT / "aiplatform" / "connectors" / "catalog.yaml"
 
 try:
     import yaml as _yaml

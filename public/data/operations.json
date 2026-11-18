@@ -2253,7 +2253,7 @@
           "label": "Connector catalog",
           "kind": "registry",
           "detail": "The only route from an archetype to a system. Each connector declares what it may expose, what it must never expose, and which archetypes may use it.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "count": 5,
           "declined": 2,
           "version": "2.4.0"
@@ -2284,7 +2284,7 @@
           "label": "Agent runtime",
           "kind": "process",
           "detail": "Where an archetype executes. Constrained: it can only reach a system through a connector in the catalog, and only with the permissions the archetype declares.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "constraint": "constrained-worker"
         },
         {
@@ -2293,7 +2293,7 @@
           "label": "MCP server",
           "kind": "process",
           "detail": "The Model Context Protocol surface over stdio JSON-RPC. Implements initialize, tools/list and tools/call. No third-party dependencies so it runs inside the constrained runtime.",
-          "source": "platform/mcp_server/server.py",
+          "source": "aiplatform/mcp_server/server.py",
           "protocol": "2024-11-05",
           "tools": 5
         },
@@ -2415,7 +2415,7 @@
           "label": "Venue incident and shift log",
           "kind": "system",
           "detail": "Nightly sync into the constrained runtime. No live write path exists, so a compromised agent cannot modify an incident record.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "data_class": "internal-personal",
           "steward": "Venue Ops Tech Lead",
           "connector_id": "ops.readonly"
@@ -2426,7 +2426,7 @@
           "label": "Gold metric layer",
           "kind": "system",
           "detail": "Aggregates only. Individual guest keys are available to the frequency archetype through the scoped, consent-checked path in its own connector entry.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "data_class": "internal-aggregated",
           "steward": "Data Platform Owner",
           "connector_id": "analytics.readonly"
@@ -2437,7 +2437,7 @@
           "label": "Consent-checked audience service",
           "kind": "system",
           "detail": "The service itself refuses to return a row where consented_email is not yes or the age band is 13-17. The policy check in the guardrail engine is a second, independent barrier, not the only one.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "data_class": "internal-personal",
           "steward": "Marketing Platform Owner",
           "connector_id": "marketing.readonly"
@@ -2448,7 +2448,7 @@
           "label": "Campaign funnel aggregates",
           "kind": "system",
           "detail": "Aggregates only. No recipient-level record is exposed, so campaign performance cannot become a re-identification path.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "data_class": "internal-aggregated",
           "steward": "Marketing Platform Owner",
           "connector_id": "campaign.analytics"
@@ -2459,7 +2459,7 @@
           "label": "Published venue and offer pages",
           "kind": "system",
           "detail": "The only connector usable from an external tool, and it carries no operational data.",
-          "source": "platform/connectors/catalog.yaml",
+          "source": "aiplatform/connectors/catalog.yaml",
           "data_class": "public",
           "steward": "Marketing Platform Owner",
           "connector_id": "venue.directory"
@@ -2989,7 +2989,7 @@
           "tools/list",
           "tools/call"
         ],
-        "server": "platform/mcp_server/server.py"
+        "server": "aiplatform/mcp_server/server.py"
       },
       "stats": {
         "nodes": 30,

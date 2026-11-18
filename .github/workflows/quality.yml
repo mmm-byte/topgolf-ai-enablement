@@ -59,7 +59,7 @@ jobs:
         run: pytest tests/test_topology.py -q
 
       - name: Platform topology generates
-        run: python -m platform.topology.topology
+        run: python -m aiplatform.topology.topology
 
       - name: Archetype health and drift report
         run: python -m monitoring.health_report

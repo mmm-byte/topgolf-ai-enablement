@@ -8,7 +8,7 @@ so it cannot drift from the implementation. Every node carries a `source` field 
 the file it came from, and the portal renders that link.
 
 Usage:
-    python -m platform.topology.topology --json
+    python -m aiplatform.topology.topology --json
 """
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ LAYERS = [
 
 def build_topology() -> dict:
     archetype_catalog = _yaml_load(ROOT / "archetypes" / "catalog.yaml")
-    connector_catalog = _yaml_load(ROOT / "platform" / "connectors" / "catalog.yaml")
+    connector_catalog = _yaml_load(ROOT / "aiplatform" / "connectors" / "catalog.yaml")
     pipeline = json.loads((ROOT / "public" / "data" / "operations.json").read_text(encoding="utf-8"))
 
     nodes: list[dict] = []
@@ -102,7 +102,7 @@ def build_topology() -> dict:
     node("cat.connectors", "catalog", "Connector catalog", "registry",
          "The only route from an archetype to a system. Each connector declares what "
          "it may expose, what it must never expose, and which archetypes may use it.",
-         "platform/connectors/catalog.yaml",
+         "aiplatform/connectors/catalog.yaml",
          count=len(connector_catalog.get("connectors", [])),
          declined=len(connector_catalog.get("pending", [])),
          version=(connector_catalog.get("catalog") or {}).get("version", ""))
@@ -122,12 +122,12 @@ def build_topology() -> dict:
          "Where an archetype executes. Constrained: it can only reach a system through "
          "a connector in the catalog, and only with the permissions the archetype "
          "declares.",
-         "platform/connectors/catalog.yaml", constraint="constrained-worker")
+         "aiplatform/connectors/catalog.yaml", constraint="constrained-worker")
     node("rt.mcp", "runtime", "MCP server", "process",
          "The Model Context Protocol surface over stdio JSON-RPC. Implements "
          "initialize, tools/list and tools/call. No third-party dependencies so it "
          "runs inside the constrained runtime.",
-         "platform/mcp_server/server.py", protocol="2024-11-05", tools=5)
+         "aiplatform/mcp_server/server.py", protocol="2024-11-05", tools=5)
     node("rt.guard", "control", "Guardrail engine", "process",
          "Deterministic checks that fail closed. Scope: fields touched against "
          "fields declared. Output: structure, bounds and prohibited content. Policy: "
@@ -189,7 +189,7 @@ def build_topology() -> dict:
     # ------------------------------------------------------------ source systems
     for connector in connector_catalog.get("connectors", []):
         node(f"src.{connector['id']}", "source", connector["system"], "system",
-             connector["notes"], "platform/connectors/catalog.yaml",
+             connector["notes"], "aiplatform/connectors/catalog.yaml",
              data_class=connector["data_class"], steward=connector["steward"],
              connector_id=connector["id"])
 
@@ -379,7 +379,7 @@ def build_topology() -> dict:
             "transport": "stdio, newline-delimited JSON-RPC 2.0",
             "methods": ["initialize", "notifications/initialized", "ping",
                         "tools/list", "tools/call"],
-            "server": "platform/mcp_server/server.py",
+            "server": "aiplatform/mcp_server/server.py",
         },
         "stats": {"nodes": len(nodes), "edges": len(edges),
                   "gold_tables": len(gold), "mcp_tools": len(mcp_tools)},

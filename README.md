@@ -47,8 +47,8 @@ Nothing in this repository is a mock. Every claim below is produced by a command
 | Secrets scan | `python3 -m security.guardrails.secrets_scan` | clean across the working tree; CI also scans git history |
 | Catalog validator | `python3 -m monitoring.validate_catalog` | 4 archetypes, 3 declined, 0 errors |
 | Health monitor | `python3 -m monitoring.health_report` | flags prompt drift in `shift-handover` (+17.3%) |
-| MCP server | `python3 -m platform.mcp_server.server` | stdio JSON-RPC, refuses unauthorised connector use |
-| Topology generator | `python3 -m platform.topology.topology` | 30 nodes, 32 connections, 9 tables, 5 tools |
+| MCP server | `python3 -m aiplatform.mcp_server.server` | stdio JSON-RPC, refuses unauthorised connector use |
+| Topology generator | `python3 -m aiplatform.topology.topology` | 30 nodes, 32 connections, 9 tables, 5 tools |
 | Test suite | `python3 -m pytest tests -q` | **61 tests pass** |
 | Portal | `npm run build` then `npm start` | production build, 44.5 kB route |
 
@@ -75,8 +75,8 @@ portal renders the full inventory, and the dashed red connections are the paths 
 are blocked by design.
 
 ```bash
-python3 -m platform.topology.topology          # readable summary
-python3 -m platform.topology.topology --json   # the graph the portal renders
+python3 -m aiplatform.topology.topology          # readable summary
+python3 -m aiplatform.topology.topology --json   # the graph the portal renders
 ```
 
 ### The MCP contract
@@ -361,7 +361,7 @@ python3 -m security.adversarial.run_suite               # adversarial suite
 python3 -m security.guardrails.secrets_scan             # secrets scan
 python3 -m monitoring.validate_catalog                   # catalog integrity
 python3 -m monitoring.health_report                     # health and drift
-python3 -m platform.topology.topology                   # architecture graph
+python3 -m aiplatform.topology.topology                   # architecture graph
 python3 -m rag.minimal_retrieval "how do I retire an archetype"
 ```
 

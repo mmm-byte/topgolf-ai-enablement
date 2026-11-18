@@ -430,8 +430,8 @@ function Overview({ go }: { go: (id: string) => void }) {
         "There is no write path anywhere in the server.",
       ],
       files: [
-        { path: "platform/connectors/catalog.yaml", what: "Five approved connectors and two blocked requests with reasons." },
-        { path: "platform/mcp_server/server.py", what: "JSON-RPC 2.0 over stdio with enforced connector governance and redaction." },
+        { path: "aiplatform/connectors/catalog.yaml", what: "Five approved connectors and two blocked requests with reasons." },
+        { path: "aiplatform/mcp_server/server.py", what: "JSON-RPC 2.0 over stdio with enforced connector governance and redaction." },
       ],
     },
     {

@@ -34,7 +34,7 @@ CORPUS: list[tuple[str, str]] = [
     ("archetypes/references/intake-questionnaire.md", "intake questionnaire data class owner connector steward"),
     ("archetypes/references/spec-template.md", "spec template rules escalation release gate success measure"),
     ("archetypes/references/guardrails.md", "guardrails scope output policy check severity class"),
-    ("platform/connectors/catalog.yaml", "connector catalog approved connector never exposes steward"),
+    ("aiplatform/connectors/catalog.yaml", "connector catalog approved connector never exposes steward"),
     ("review/ai-output-review-rubric.md", "review rubric code spec gate result findings severity"),
     ("review/gate-finding-triage.md", "triage escalation route security data owner app steward severity"),
     ("rag/when-to-use-retrieval.md", "retrieval query metric decision rag when to use"),

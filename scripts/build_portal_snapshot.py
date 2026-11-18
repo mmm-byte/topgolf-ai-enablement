@@ -66,12 +66,12 @@ def build() -> dict:
     snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
 
     catalog = _load_yaml(ROOT / "archetypes" / "catalog.yaml")
-    connectors = _load_yaml(ROOT / "platform" / "connectors" / "catalog.yaml")
+    connectors = _load_yaml(ROOT / "aiplatform" / "connectors" / "catalog.yaml")
     health = _run_json("monitoring.health_report")
     adversarial = _run_json("security.adversarial.run_suite")
     catalog_validation = _run_json("monitoring.validate_catalog")
 
-    topology = _run_json("platform.topology.topology")
+    topology = _run_json("aiplatform.topology.topology")
     guardrail_selftest = _run_guardrail_self_test()
 
     snapshot["governance"] = {

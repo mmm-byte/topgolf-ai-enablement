@@ -5,7 +5,7 @@ no third-party dependencies and can run inside a constrained runtime.
 
 What makes this a *governed* server rather than a plain tool server:
 
-1. Only connectors listed in `platform/connectors/catalog.yaml` are reachable.
+1. Only connectors listed in `aiplatform/connectors/catalog.yaml` are reachable.
 2. Each tool is bound to exactly one connector, and the connector's `never_exposes`
    list is enforced on every row returned.
 3. Every tool call is recorded with the archetype that requested it, and a call that
@@ -13,10 +13,10 @@ What makes this a *governed* server rather than a plain tool server:
 4. There is no write path. The server exposes reads only.
 
 Run it:
-    python -m platform.mcp_server.server
+    python -m aiplatform.mcp_server.server
 
 Talk to it:
-    echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | python -m platform.mcp_server.server
+    echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | python -m aiplatform.mcp_server.server
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 GOLD = ROOT / "data" / "gold"
-CONNECTOR_CATALOG = ROOT / "platform" / "connectors" / "catalog.yaml"
+CONNECTOR_CATALOG = Path(__file__).resolve().parents[1] / "connectors" / "catalog.yaml"
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_NAME = "topgolf-governed-mcp"

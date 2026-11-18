@@ -15,7 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from platform.topology import topology as topo  # noqa: E402
+from aiplatform.topology import topology as topo  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -71,26 +71,26 @@ class TestCatalogConsistency:
         assert registry["count"] == declared
 
     def test_topology_nodes_match_the_connector_catalog(self, graph):
-        catalog = topo._yaml_load(ROOT / "platform" / "connectors" / "catalog.yaml")
+        catalog = topo._yaml_load(ROOT / "aiplatform" / "connectors" / "catalog.yaml")
         declared = len(catalog.get("connectors", []))
         registry = next(n for n in graph["nodes"] if n["id"] == "cat.connectors")
         assert registry["count"] == declared
 
     def test_every_connector_has_a_source_node(self, graph):
-        catalog = topo._yaml_load(ROOT / "platform" / "connectors" / "catalog.yaml")
+        catalog = topo._yaml_load(ROOT / "aiplatform" / "connectors" / "catalog.yaml")
         node_ids = {n["id"] for n in graph["nodes"]}
         for connector in catalog.get("connectors", []):
             assert f"src.{connector['id']}" in node_ids
 
     def test_every_mcp_tool_is_bound_to_an_approved_connector(self, graph):
-        catalog = topo._yaml_load(ROOT / "platform" / "connectors" / "catalog.yaml")
+        catalog = topo._yaml_load(ROOT / "aiplatform" / "connectors" / "catalog.yaml")
         approved = {c["id"] for c in catalog.get("connectors", [])}
         for tool in graph["mcp_tools"]:
             assert tool["connector"] in approved, f"{tool['name']} binds an unapproved connector"
 
     def test_mcp_tool_count_matches_the_server(self, graph):
         sys.path.insert(0, str(ROOT))
-        from platform.mcp_server import server
+        from aiplatform.mcp_server import server
         assert len(graph["mcp_tools"]) == len(server.TOOLS)
 
     def test_gold_table_list_matches_the_pipeline_output(self, graph):

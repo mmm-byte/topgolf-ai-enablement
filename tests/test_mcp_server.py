@@ -16,7 +16,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from platform.mcp_server import server as mcp  # noqa: E402
+from aiplatform.mcp_server import server as mcp  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -66,7 +66,7 @@ class TestProtocolSurface:
     def test_server_runs_over_stdio(self):
         payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         proc = subprocess.run(
-            [sys.executable, "-m", "platform.mcp_server.server"],
+            [sys.executable, "-m", "aiplatform.mcp_server.server"],
             input=payload, capture_output=True, text=True, cwd=ROOT)
         assert proc.returncode == 0
         assert json.loads(proc.stdout.strip().splitlines()[0])["result"]["serverInfo"]

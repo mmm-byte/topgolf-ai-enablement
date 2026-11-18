@@ -102,7 +102,7 @@ export default function PipelineFlow() {
         { name: "Output logged for review", automated: true, state: "Required for personal-data archetypes" },
         { name: "Sample reviewed", automated: false, state: "Answers sampled daily" },
       ],
-      artifact: "platform/connectors/catalog.yaml",
+      artifact: "aiplatform/connectors/catalog.yaml",
       icon: "database",
     },
     {
